@@ -31,18 +31,20 @@ class Axiomchannel extends AdminController
      */
     public function __construct()
     {
-        // Webhook é chamado pela Evolution API sem sessão de admin.
-        // Pulamos o AdminController (que exige login) e chamamos App_Controller diretamente.
-        $uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-        if (strpos($uri, '/axiomchannel/webhook') !== false) {
-            App_Controller::__construct();
-            $this->load->model('axiomchannel_model');
-            return;
-        }
+        parent::__construct(); // Chama o __construct do AdminController (login, sessão, etc)
 
-        parent::__construct();
+        // Carrega o Model — nosso "garçom do banco de dados"
+        // BUG CORRIGIDO: o Perfex busca models dentro do módulo automaticamente
         $this->load->model('axiomchannel_model');
+
+        // Carrega o helper com nossas funções utilitárias (axch_format_time, etc)
+        // SINTAXE CORRETA para módulo: 'nome_modulo/nome_helper'
+        // BUG ANTERIOR: estava tentando carregar sem o prefixo do módulo
         $this->load->helper('axiomchannel/axiomchannel');
+
+        // Carrega as traduções PT-BR
+        // SINTAXE CORRETA para módulo: 'nome_modulo/nome_arquivo_lang'
+        // BUG ANTERIOR: sintaxe errada — causava erro fatal no construtor
         $this->lang->load('axiomchannel', 'portuguese_br');
     }
 

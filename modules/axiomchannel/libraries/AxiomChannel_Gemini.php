@@ -59,3 +59,72 @@ class AxiomChannel_Gemini
             $role = ($msg['direction'] === 'outbound') ? 'model' : 'user';
 
             // Pula mensagens sem conteúdo de texto
+            if (empty($msg['content'])) {
+                continue;
+            }
+
+            $contents[] = [
+                'role'  => $role,
+                'parts' => [['text' => $msg['content']]],
+            ];
+        }
+
+        // Adiciona a mensagem atual do cliente
+        $contents[] = [
+            'role'  => 'user',
+            'parts' => [['text' => $user_message]],
+        ];
+
+        // Monta o payload completo para a API Gemini
+        $payload = [
+            'system_instruction' => [
+                'parts' => [['text' => $system_prompt]],
+            ],
+            'contents'           => $contents,
+            'generationConfig'   => [
+                'maxOutputTokens' => self::MAX_TOKENS,
+                'temperature'     => 0.7,
+            ],
+        ];
+
+        // Faz a requisição HTTP para a API Gemini via cURL
+        $url = self::API_URL . '?key=' . $this->api_key;
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => json_encode($payload),
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_TIMEOUT        => self::TIMEOUT,
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
+        curl_close($ch);
+
+        // Trata erros de conexão
+        if ($curl_error) {
+            return ['success' => false, 'text' => '', 'error' => 'cURL error: ' . $curl_error];
+        }
+
+        $data = json_decode($response, true);
+
+        // Trata erros retornados pela API
+        if ($http_code !== 200 || isset($data['error'])) {
+            $error_msg = isset($data['error']['message']) ? $data['error']['message'] : 'HTTP ' . $http_code;
+            return ['success' => false, 'text' => '', 'error' => $error_msg];
+        }
+
+        // Extrai o texto da resposta
+        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+        if (empty($text)) {
+            return ['success' => false, 'text' => '', 'error' => 'Resposta vazia da API Gemini'];
+        }
+
+        return ['success' => true, 'text' => trim($text), 'error' => ''];
+    }
+}

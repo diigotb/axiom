@@ -1,192 +1,158 @@
-<?php
-/**
- * ============================================================
- * AULA DE PHP — VIEWS
- * ============================================================
- * View = o HTML que o usuário vê. Mistura PHP com HTML.
- * Recebe variáveis do controller via $data[].
- *   Controller: $data['devices'] = [...]
- *   View:       $devices já está disponível diretamente
- *
- * init_head() = abre o HTML, carrega CSS do Perfex
- * init_tail() = fecha o HTML, carrega JS do Perfex
- * Sempre em par — nunca esquecer o init_tail()!
- *
- * <?= $variavel ?> = atalho para <?php echo $variavel; ?>
- */
-defined('BASEPATH') or exit('No direct script access allowed');
+<?php defined('BASEPATH') or exit('No direct script access allowed');
 init_head();
 ?>
+<link rel="stylesheet" href="<?php echo module_dir_url('axiomchannel', 'assets/css/axiomchannel.css'); ?>">
 <div id="wrapper">
-  <div class="content" id="axch-app" style="padding:0;display:flex;height:calc(100vh - 65px);overflow:hidden">
+<div class="content ax-app">
 
-    <!-- ===================== SIDEBAR ===================== -->
-    <div class="axch-sidebar" style="width:310px;min-width:310px;background:#fff;border-right:1px solid #e8e8e8;display:flex;flex-direction:column;overflow:hidden">
+  <!-- Navegação lateral -->
+  <nav class="ax-nav">
+    <a href="<?= admin_url('axiomchannel') ?>" class="ax-nav-logo">AX</a>
+    <a href="<?= admin_url('axiomchannel/inbox') ?>" class="ax-nav-item active" title="Inbox">
+      <i class="fa fa-comments"></i>
+      <?php if ($unread > 0): ?>
+        <span class="ax-nav-badge"><?= $unread ?></span>
+      <?php endif; ?>
+    </a>
+    <a href="<?= admin_url('axiomchannel/devices') ?>" class="ax-nav-item" title="Dispositivos">
+      <i class="fa fa-mobile"></i>
+    </a>
+    <div class="ax-nav-bottom">
+      <div class="ax-nav-avatar"><?= strtoupper(substr(get_staff_full_name(), 0, 1)) ?></div>
+    </div>
+  </nav>
 
-      <!-- Cabeçalho da sidebar -->
-      <div style="padding:16px;border-bottom:1px solid #e8e8e8;flex-shrink:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <h5 style="margin:0;font-weight:700;color:#5b5ef4">
-            <i class="fa fa-comments"></i> AxiomChannel
-          </h5>
-          <?php if ($unread > 0): ?>
-            <span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600">
-              <?= $unread ?>
-            </span>
-          <?php endif; ?>
-        </div>
-
-        <!-- Campo de busca -->
-        <div style="position:relative;margin-bottom:10px">
-          <input type="text" id="axch-search" class="form-control input-sm"
-                 placeholder="Buscar conversas..." style="padding-left:30px">
-          <i class="fa fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#aaa;font-size:12px"></i>
-        </div>
-
-        <!-- Filtros -->
-        <div style="display:flex;gap:6px">
-          <select id="axch-filter-device" class="form-control input-sm" style="flex:1">
-            <option value="">Todos dispositivos</option>
-            <?php foreach ($devices as $device): ?>
-              <option value="<?= $device->id ?>"><?= htmlspecialchars($device->name) ?></option>
-            <?php endforeach; ?>
-          </select>
-          <select id="axch-filter-status" class="form-control input-sm" style="flex:1">
-            <option value="open">Abertos</option>
-            <option value="pending">Pendentes</option>
-            <option value="resolved">Resolvidos</option>
-            <option value="">Todos</option>
-          </select>
-        </div>
+  <!-- Painel de conversas -->
+  <div class="ax-panel">
+    <div class="ax-panel-header">
+      <div class="ax-panel-title">
+        Inbox
+        <span class="ax-panel-count"><?= count($contacts) ?> conversas</span>
       </div>
-
-      <!-- Lista de contatos -->
-      <div id="axch-contact-list" style="flex:1;overflow-y:auto">
-        <?php if (empty($contacts)): ?>
-          <div style="text-align:center;padding:40px 20px;color:#ccc">
-            <i class="fa fa-comments-o" style="font-size:32px;display:block;margin-bottom:10px"></i>
-            <p>Nenhuma conversa ainda.<br>Aguarde mensagens chegarem.</p>
-          </div>
-        <?php else: ?>
-          <?php foreach ($contacts as $c): ?>
-            <a href="<?= admin_url('axiomchannel/chat/' . $c->id) ?>"
-               style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:inherit;border-bottom:1px solid #f5f5f5;<?= !$c->is_read ? 'background:#f0f0ff' : '' ?>"
-               data-id="<?= $c->id ?>">
-              <!-- Avatar com inicial do nome -->
-              <div style="position:relative;flex-shrink:0">
-                <div style="width:40px;height:40px;border-radius:50%;background:#ebebff;color:#5b5ef4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">
-                  <?= strtoupper(substr($c->name ?: $c->phone_number, 0, 1)) ?>
-                </div>
-                <!-- Bolinha de status: verde=aberto, amarelo=pendente, cinza=resolvido -->
-                <span style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;border:2px solid #fff;background:<?= $c->status === 'open' ? '#2ecc71' : ($c->status === 'pending' ? '#f39c12' : '#bdc3c7') ?>"></span>
-              </div>
-              <!-- Info da conversa -->
-              <div style="flex:1;min-width:0">
-                <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-                  <span style="font-size:13px;font-weight:<?= !$c->is_read ? '700' : '500' ?>;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">
-                    <?= htmlspecialchars($c->name ?: $c->phone_number) ?>
-                  </span>
-                  <span style="font-size:11px;color:#999;flex-shrink:0">
-                    <?= axch_format_time($c->last_message_at) ?>
-                  </span>
-                </div>
-                <div style="font-size:12px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                  <?= htmlspecialchars(substr($c->last_message ?? '', 0, 50)) ?>
-                  <?php if (!$c->is_read): ?>
-                    <span style="float:right;width:8px;height:8px;border-radius:50%;background:#5b5ef4;display:inline-block;margin-top:3px"></span>
-                  <?php endif; ?>
-                </div>
-              </div>
-            </a>
+      <div class="ax-search">
+        <i class="fa fa-search ax-search-icon"></i>
+        <input type="text" id="axch-search" placeholder="Buscar conversas...">
+      </div>
+      <div class="ax-filters">
+        <select id="axch-filter-device" class="ax-filter">
+          <option value="">Todos dispositivos</option>
+          <?php foreach ($devices as $d): ?>
+            <option value="<?= $d->id ?>"><?= htmlspecialchars($d->name) ?></option>
           <?php endforeach; ?>
-        <?php endif; ?>
+        </select>
+        <select id="axch-filter-status" class="ax-filter">
+          <option value="open">Abertos</option>
+          <option value="pending">Pendentes</option>
+          <option value="resolved">Resolvidos</option>
+          <option value="">Todos</option>
+        </select>
       </div>
     </div>
 
-    <!-- ===================== PAINEL VAZIO ===================== -->
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#f9f9f9;flex-direction:column;color:#ccc">
-      <i class="fa fa-comments" style="font-size:52px;margin-bottom:16px;color:#5b5ef4;opacity:0.25"></i>
-      <h4 style="font-weight:400;color:#bbb">Selecione uma conversa</h4>
-      <p style="font-size:13px">Escolha um contato na lista para atender</p>
+    <div class="ax-contact-list" id="axch-contact-list">
+      <?php if (empty($contacts)): ?>
+        <div class="ax-empty-state">
+          <div class="ax-empty-icon"><i class="fa fa-comments-o"></i></div>
+          <p class="ax-empty-title">Nenhuma conversa ainda</p>
+          <p class="ax-empty-desc">Aguarde mensagens chegarem pelo WhatsApp</p>
+        </div>
+      <?php else: ?>
+        <?php foreach ($contacts as $c): ?>
+          <a href="<?= admin_url('axiomchannel/chat/' . $c->id) ?>"
+             class="ax-contact-item <?= !$c->is_read ? 'unread' : '' ?>"
+             data-id="<?= $c->id ?>">
+            <div class="ax-avatar">
+              <div class="ax-avatar-img">
+                <?php if ($c->avatar): ?>
+                  <img src="<?= $c->avatar ?>" alt="">
+                <?php else: ?>
+                  <?= strtoupper(substr($c->name ?: $c->phone_number, 0, 1)) ?>
+                <?php endif; ?>
+              </div>
+              <span class="ax-status-dot ax-status-<?= $c->status ?>"></span>
+            </div>
+            <div class="ax-contact-info">
+              <div class="ax-contact-top">
+                <span class="ax-contact-name ax-truncate"><?= htmlspecialchars($c->name ?: $c->phone_number) ?></span>
+                <span class="ax-contact-time"><?= axch_format_time($c->last_message_at) ?></span>
+              </div>
+              <div class="ax-contact-preview">
+                <?= htmlspecialchars(substr($c->last_message ?? '', 0, 50)) ?>
+                <?php if (!$c->is_read): ?>
+                  <span class="ax-unread-dot"></span>
+                <?php endif; ?>
+              </div>
+            </div>
+          </a>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div>
-
   </div>
+
+  <!-- Área principal vazia -->
+  <div class="ax-main ax-empty-state">
+    <div class="ax-empty-icon"><i class="fa fa-comments"></i></div>
+    <p class="ax-empty-title">Selecione uma conversa</p>
+    <p class="ax-empty-desc">Escolha um contato na lista para iniciar o atendimento</p>
+  </div>
+
+</div>
 </div>
 
 <script>
 const CSRF_TOKEN = '<?= $this->security->get_csrf_hash() ?>';
 const CSRF_NAME  = '<?= $this->security->get_csrf_token_name() ?>';
-// ============================================================
-// AULA DE JS — Como funciona o polling (atualização automática)
-// ============================================================
-// Polling = a cada X segundos, pergunta ao servidor se tem novidade.
-// É simples e funciona bem para até ~100 usuários simultâneos.
-// No futuro usaremos WebSocket (tempo real de verdade).
-
-const ADMIN_URL   = '<?= admin_url() ?>';
+const ADMIN_URL  = '<?= admin_url() ?>';
 let searchTimer;
 
-// Carrega a lista de contatos via AJAX com os filtros aplicados
 function axchLoadContacts() {
   const params = new URLSearchParams({
     search:    document.getElementById('axch-search').value,
     device_id: document.getElementById('axch-filter-device').value,
     status:    document.getElementById('axch-filter-status').value,
+    [CSRF_NAME]: CSRF_TOKEN,
   });
-
   fetch(ADMIN_URL + 'axiomchannel/get_contacts', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'X-Requested-With': 'XMLHttpRequest' // isso faz is_ajax_request() retornar true
-    },
-    body: (() => { params.append(CSRF_NAME, CSRF_TOKEN); return params; })()
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: params
   })
   .then(r => r.json())
-  .then(data => {
-    if (data.success) renderContacts(data.contacts);
-  })
+  .then(data => { if (data.success) renderContacts(data.contacts); })
   .catch(err => console.error('Erro ao buscar contatos:', err));
 }
 
 function renderContacts(contacts) {
   const list = document.getElementById('axch-contact-list');
-
-  if (!contacts || contacts.length === 0) {
-    list.innerHTML = '<div style="text-align:center;padding:40px;color:#ccc"><i class="fa fa-comments-o" style="font-size:28px;display:block;margin-bottom:8px"></i><p>Nenhuma conversa encontrada</p></div>';
+  if (!contacts || !contacts.length) {
+    list.innerHTML = '<div class="ax-empty-state"><div class="ax-empty-icon"><i class="fa fa-comments-o"></i></div><p class="ax-empty-title">Nenhuma conversa encontrada</p></div>';
     return;
   }
-
   list.innerHTML = contacts.map(c => {
     const inicial = (c.name || c.phone_number || '?')[0].toUpperCase();
     const nome    = esc(c.name || c.phone_number);
     const preview = esc((c.last_message || '').substring(0, 50));
     const tempo   = formatTime(c.last_message_at);
     const unread  = parseInt(c.is_read) === 0;
-    const statusColor = c.status === 'open' ? '#2ecc71' : c.status === 'pending' ? '#f39c12' : '#bdc3c7';
-
-    return `<a href="${ADMIN_URL}axiomchannel/chat/${c.id}"
-       style="display:flex;align-items:center;gap:10px;padding:12px 16px;text-decoration:none;color:inherit;border-bottom:1px solid #f5f5f5;${unread ? 'background:#f0f0ff' : ''}"
-       data-id="${c.id}">
-      <div style="position:relative;flex-shrink:0">
-        <div style="width:40px;height:40px;border-radius:50%;background:#ebebff;color:#5b5ef4;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">${inicial}</div>
-        <span style="position:absolute;bottom:1px;right:1px;width:9px;height:9px;border-radius:50%;border:2px solid #fff;background:${statusColor}"></span>
+    return `<a href="${ADMIN_URL}axiomchannel/chat/${c.id}" class="ax-contact-item ${unread ? 'unread' : ''}" data-id="${c.id}">
+      <div class="ax-avatar">
+        <div class="ax-avatar-img">${inicial}</div>
+        <span class="ax-status-dot ax-status-${c.status}"></span>
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-          <span style="font-size:13px;font-weight:${unread ? '700' : '500'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px">${nome}</span>
-          <span style="font-size:11px;color:#999;flex-shrink:0">${tempo}</span>
+      <div class="ax-contact-info">
+        <div class="ax-contact-top">
+          <span class="ax-contact-name ax-truncate">${nome}</span>
+          <span class="ax-contact-time">${tempo}</span>
         </div>
-        <div style="font-size:12px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        <div class="ax-contact-preview">
           ${preview}
-          ${unread ? '<span style="float:right;width:8px;height:8px;border-radius:50%;background:#5b5ef4;display:inline-block;margin-top:3px"></span>' : ''}
+          ${unread ? '<span class="ax-unread-dot"></span>' : ''}
         </div>
       </div>
     </a>`;
   }).join('');
 }
 
-// Escapa HTML para evitar XSS (nunca colocar dado do usuário direto no HTML)
 function esc(str) {
   const d = document.createElement('div');
   d.textContent = str || '';
@@ -203,15 +169,12 @@ function formatTime(dt) {
   return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
 }
 
-// Eventos dos filtros
 document.getElementById('axch-search').addEventListener('input', () => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(axchLoadContacts, 400); // espera 400ms antes de buscar
+  searchTimer = setTimeout(axchLoadContacts, 400);
 });
 document.getElementById('axch-filter-device').addEventListener('change', axchLoadContacts);
 document.getElementById('axch-filter-status').addEventListener('change', axchLoadContacts);
-
-// Polling: atualiza a lista a cada 8 segundos
 setInterval(axchLoadContacts, 8000);
 </script>
 
