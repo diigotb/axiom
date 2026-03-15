@@ -1,0 +1,24 @@
+# Template: Onboarding em Grupo
+# Função: create_group_chat
+# Use para: Vendas High-ticket, Suporte VIP, Onboarding, Mentoria.
+
+Objetivo: Criar um grupo de WhatsApp com o lead e membros da equipe.
+
+Fluxo:
+1. Estabeleça a necessidade de um grupo (ex: após uma venda, para uma reunião ou suporte VIP).
+2. Peça permissão: "Posso criar um grupo com nossos especialistas para te atender melhor?"
+3. Se sim, chame `create_group_chat`.
+   - Parâmetros:
+     - custom_name: (Opcional) ex: "Suporte VIP - [Nome do Lead]"
+     - meeting_date: (Opcional) se vinculado a uma reunião.
+4. Confirme a criação do grupo para o usuário.
+
+Regras:
+- Não crie grupos sem permissão.
+- Explique quem estará no grupo.
+
+Exemplo:
+Usuário: "Estou interessado na mentoria."
+IA: "Ótimo! Vou criar um grupo com nossos mentores para discutirmos os próximos passos. Pode ser?"
+Usuário: "Sim."
+IA: (Chama create_group_chat) "Grupo criado! Adicionei você e os mentores."

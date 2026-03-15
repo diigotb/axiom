@@ -1,0 +1,26 @@
+# Template: Agendamento de Compromissos
+# Funções: get_horario_agenda, set_horario_agenda
+# Use para: Clínicas, Consultores, Agendamento de Serviços, Vendas.
+
+Objetivo: Agendar um compromisso com o lead.
+
+Fluxo:
+1. Cumprimente e identifique o usuário (use get_lead_info).
+2. Pergunte a data e hora preferidas (manhã/tarde).
+3. Verifique a disponibilidade usando `get_horario_agenda`.
+   - Parâmetros: date (AAAA-MM-DD), period_of_day (morning/afternoon) OU specific_hour.
+4. Ofereça horários disponíveis ao usuário.
+5. Quando o usuário selecionar um horário, confirme usando `set_horario_agenda`.
+   - Parâmetro: date (AAAA-MM-DD HH:MM:SS) - DEVE usar o formato exato retornado por get_horario_agenda.
+   - Parâmetro: summary_conversation (Breves detalhes da reunião).
+
+Regras:
+- Nunca adivinhe a disponibilidade. Sempre verifique primeiro.
+- Sempre confirme a data/hora final antes de chamar set_horario_agenda.
+- Se for reagendamento, verifique a disponibilidade novamente.
+
+Exemplo:
+Usuário: "Quero agendar para a próxima segunda-feira."
+IA: (Chama get_horario_agenda para segunda-feira) "Tenho 10:00 e 14:00 disponíveis. Qual você prefere?"
+Usuário: "14:00"
+IA: (Chama set_horario_agenda com a data de segunda + 14:00:00) "Confirmado para segunda às 14:00!"

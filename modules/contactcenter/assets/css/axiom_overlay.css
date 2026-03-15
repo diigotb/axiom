@@ -1,0 +1,1044 @@
+/* ============================================
+   AXIOM Intelligent Overlay - Glassmorphism Design
+   Non-destructive overlay for CRM dashboard
+   ============================================ */
+
+/* Glassmorphism Base Variables */
+:root {
+    --axiom-glass-bg: rgba(15, 15, 20, 0.85);
+    --axiom-glass-blur: blur(12px);
+    --axiom-glass-border: 1px solid rgba(255, 255, 255, 0.1);
+    --axiom-primary: #00e09b;
+    --axiom-primary-glow: rgba(0, 224, 155, 0.4);
+    --axiom-accent-purple: #9d4edd;
+    --axiom-transition: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* AXIOM Trigger Button */
+.axiom-trigger-btn {
+    position: relative;
+    background: linear-gradient(135deg, var(--axiom-primary), #00b87a);
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s var(--axiom-transition);
+    box-shadow: 0 2px 8px rgba(0, 224, 155, 0.3);
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    width: auto;
+    height: auto;
+    min-width: auto;
+}
+
+.footer-bar ul li.axiom-trigger-btn {
+    display: inline-flex;
+}
+
+.axiom-trigger-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--axiom-primary-glow);
+}
+
+.axiom-trigger-btn:active {
+    transform: translateY(0);
+}
+
+.axiom-trigger-btn i {
+    font-size: 16px;
+}
+
+.axiom-trigger-btn.active {
+    background: linear-gradient(135deg, var(--axiom-accent-purple), #7b2cbf);
+    box-shadow: 0 4px 16px rgba(157, 78, 221, 0.4);
+}
+
+/* Off-Canvas Drawer Container - Integrated Layout */
+.axiom-drawer {
+    position: fixed;
+    top: 0;
+    right: -450px;
+    width: 450px;
+    height: 100vh;
+    background: var(--axiom-glass-bg);
+    backdrop-filter: var(--axiom-glass-blur);
+    -webkit-backdrop-filter: var(--axiom-glass-blur);
+    border-left: var(--axiom-glass-border);
+    z-index: 10050;
+    transition: right 0.4s var(--axiom-transition);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.axiom-drawer.active {
+    right: 0;
+}
+
+/* Adjust main content when drawer is active - Desktop only, very conservative */
+@media (min-width: 769px) {
+
+    /* Only adjust wrapper, let it handle children naturally */
+    body.axiom-drawer-active:not(.mobile) #wrapper {
+        padding-right: 450px;
+        transition: padding-right 0.4s var(--axiom-transition);
+        box-sizing: border-box;
+    }
+
+    /* Ensure drawer doesn't break layout */
+    body.axiom-drawer-active:not(.mobile) .axiom-drawer {
+        position: fixed;
+        right: 0;
+        top: 0;
+    }
+}
+
+/* Don't force hide sidebar with CSS - let hide-menu button manage it */
+/* The sidebar will be closed when AXIOM opens via JavaScript, but can be reopened */
+
+/* Drawer Header */
+.axiom-drawer-header {
+    padding: 20px;
+    border-bottom: var(--axiom-glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(15, 15, 20, 0.5);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.axiom-drawer-title {
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.axiom-drawer-title i {
+    color: var(--axiom-primary);
+}
+
+.axiom-drawer-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: color 0.3s;
+}
+
+.axiom-drawer-close:hover {
+    color: white;
+}
+
+/* Drawer Body - Scrollable Content */
+.axiom-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Feature Block - Base Style */
+.axiom-feature-block {
+    background: rgba(255, 255, 255, 0.05);
+    border: var(--axiom-glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s var(--axiom-transition);
+}
+
+.axiom-feature-block:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.axiom-feature-title {
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.axiom-feature-title i {
+    color: var(--axiom-primary);
+    font-size: 18px;
+}
+
+/* DealPulse - Predictive Scoring */
+.dealpulse-gauge {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+/* DealPulse skeleton: fill gauge exactly (no fixed height so it matches gauge on mobile too) */
+.dealpulse-gauge .axiom-shimmer-dealpulse {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+}
+
+.dealpulse-score {
+    text-align: center;
+    font-size: 48px;
+    font-weight: 700;
+    color: white;
+    margin-top: 20px;
+}
+
+.dealpulse-label {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.dealpulse-cold {
+    color: #e63946;
+}
+
+.dealpulse-warm {
+    color: #ffb703;
+}
+
+.dealpulse-hot {
+    color: var(--axiom-primary);
+}
+
+.dealpulse-progress {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.dealpulse-progress-bar {
+    height: 100%;
+    transition: width 0.6s var(--axiom-transition), background-color 0.6s;
+    border-radius: 6px;
+}
+
+/* ClientDNA - Sentiment Analysis */
+#clientDNAContent {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+#stratPathContent {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.clientdna-sentiment {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+}
+
+.clientdna-emoji {
+    font-size: 48px;
+    line-height: 1;
+}
+
+.clientdna-label {
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.clientdna-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+/* Quick Reply - Context + AI suggestions */
+.quickreply-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quickreply-label {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.quickreply-select,
+.quickreply-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 14px;
+}
+
+/* Dark dropdown list so options don't show white background */
+.quickreply-select {
+    color-scheme: dark;
+}
+
+.quickreply-select option {
+    background: #25282c;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.quickreply-select:focus,
+.quickreply-input:focus {
+    outline: none;
+    border-color: var(--axiom-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Quick Reply - Objectives & Products registry (add/delete/select) */
+.quickreply-registry {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.quickreply-registry-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.quickreply-chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 24px;
+}
+.quickreply-add-row {
+    display: flex;
+    gap: 8px;
+}
+.quickreply-add-row .quickreply-input {
+    flex: 1;
+    min-width: 0;
+}
+.quickreply-add-btn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--axiom-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.quickreply-add-btn:hover {
+    background: rgba(0, 224, 155, 0.15);
+    border-color: var(--axiom-primary);
+}
+.quickreply-objective-chip,
+.quickreply-product-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.quickreply-objective-chip:hover,
+.quickreply-product-chip:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+.quickreply-objective-chip.selected,
+.quickreply-product-chip.selected {
+    background: rgba(0, 224, 155, 0.15);
+    border-color: var(--axiom-primary);
+    color: white;
+}
+.quickreply-objective-chip .chip-delete,
+.quickreply-product-chip .chip-delete {
+    padding: 0 2px;
+    opacity: 0.6;
+    font-size: 12px;
+    margin-left: 2px;
+}
+.quickreply-objective-chip .chip-delete:hover,
+.quickreply-product-chip .chip-delete:hover {
+    opacity: 1;
+    color: #e63946;
+}
+
+.quickreply-generate-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--axiom-primary), #00b87a);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s var(--axiom-transition);
+    margin-top: 4px;
+}
+
+.quickreply-generate-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--axiom-primary-glow);
+}
+
+.quickreply-generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Quick Reply - Prioritized at top, AI thinking state */
+.axiom-quickreply-priority {
+    order: -1;
+}
+
+.quickreply-thinking {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 14px;
+    margin-top: 12px;
+    border-radius: 8px;
+    background: rgba(0, 224, 155, 0.06);
+    border: 1px solid rgba(0, 224, 155, 0.2);
+}
+
+.quickreply-thinking-dots {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.quickreply-thinking-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--axiom-primary);
+    animation: quickreply-dot-pulse 1.2s ease-in-out infinite both;
+}
+
+.quickreply-thinking-dots span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.quickreply-thinking-dots span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes quickreply-dot-pulse {
+
+    0%,
+    80%,
+    100% {
+        opacity: 0.4;
+        transform: scale(0.85);
+    }
+
+    40% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.quickreply-thinking-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.quickreply-suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.quickreply-suggestion-card {
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    line-height: 1.45;
+    cursor: pointer;
+    transition: all 0.2s var(--axiom-transition);
+    text-align: left;
+    animation: quickreply-card-in 0.35s ease-out;
+}
+
+@keyframes quickreply-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.quickreply-suggestion-card:hover {
+    background: rgba(0, 224, 155, 0.12);
+    border-color: var(--axiom-primary);
+}
+
+.quickreply-suggestion-card .use-label {
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--axiom-primary);
+}
+
+.clientdna-tag {
+    background: rgba(0, 224, 155, 0.2);
+    border: 1px solid var(--axiom-primary);
+    color: var(--axiom-primary);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* EchoSense - Audio Intelligence */
+.echosense-player {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.echosense-audio-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.echosense-toggle-transcript {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.echosense-toggle-transcript:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.echosense-transcript {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    line-height: 1.6;
+    display: none;
+}
+
+.echosense-transcript.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+/* StratPath - Strategy Cards */
+.stratpath-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.stratpath-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: var(--axiom-glass-border);
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s;
+}
+
+.stratpath-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--axiom-primary);
+}
+
+.stratpath-card-title {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.stratpath-card-preview {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.stratpath-use-btn {
+    background: var(--axiom-primary);
+    border: none;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.stratpath-use-btn:hover {
+    background: #00b87a;
+    transform: translateY(-1px);
+}
+
+/* FlowSync - Auto Actions */
+.flowsync-action-card {
+    background: linear-gradient(135deg, rgba(157, 78, 221, 0.2), rgba(123, 44, 191, 0.2));
+    border: 1px solid var(--axiom-accent-purple);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    animation: slideIn 0.4s var(--axiom-transition);
+}
+
+.flowsync-action-title {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flowsync-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.flowsync-action-btn {
+    flex: 1;
+    background: var(--axiom-accent-purple);
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+}
+
+.flowsync-action-btn:hover {
+    background: #7b2cbf;
+    transform: translateY(-1px);
+}
+
+/* ASK AXIOM - Top block */
+.axiom-ask-block {
+    order: -2;
+}
+.axiom-ask-title {
+    margin-bottom: 12px !important;
+}
+
+/* Collapsible sections - DealPulse, ClientDNA, StratPath (load on expand) */
+.axiom-collapsible-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+.axiom-collapsible-title {
+    padding: 12px 16px;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s ease;
+}
+.axiom-collapsible-title:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+.axiom-chevron {
+    font-size: 12px;
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+.axiom-collapsible-section.axiom-collapsed .axiom-collapsible-content {
+    display: none;
+}
+.axiom-collapsible-content {
+    padding: 16px;
+    padding-top: 0;
+}
+
+.deepquery-input-container {
+    display: flex;
+    gap: 10px;
+}
+
+.deepquery-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: var(--axiom-glass-border);
+    border-radius: 8px;
+    padding: 10px 15px;
+    color: white;
+    font-size: 14px;
+}
+
+.deepquery-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.deepquery-input:focus {
+    outline: none;
+    border-color: var(--axiom-primary);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.deepquery-submit {
+    background: var(--axiom-primary);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.deepquery-submit:hover {
+    background: #00b87a;
+}
+
+.deepquery-response {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    line-height: 1.8;
+    max-height: 300px;
+    overflow-y: auto;
+    word-wrap: break-word;
+}
+
+.deepquery-response p {
+    margin: 10px 0;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.deepquery-response p:first-child {
+    margin-top: 0;
+}
+
+.deepquery-response p:last-child {
+    margin-bottom: 0;
+}
+
+.deepquery-response strong {
+    color: #00e09b;
+    font-weight: 600;
+}
+
+.deepquery-response em {
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
+}
+
+.deepquery-response ol,
+.deepquery-response ul {
+    margin: 10px 0;
+    padding-left: 25px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.deepquery-response li {
+    margin: 5px 0;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.deepquery-response ol {
+    list-style-type: decimal;
+}
+
+.deepquery-response ul {
+    list-style-type: disc;
+}
+
+/* SmartChips - Quick Suggestions */
+.smartchips-container {
+    display: flex;
+    gap: 8px;
+    padding: 10px 15px;
+    background: rgba(15, 15, 20, 0.5);
+    border-bottom: var(--axiom-glass-border);
+    flex-wrap: wrap;
+    animation: fadeInUp 0.4s var(--axiom-transition);
+}
+
+.smartchip {
+    background: rgba(0, 224, 155, 0.2);
+    border: 1px solid var(--axiom-primary);
+    color: var(--axiom-primary);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.smartchip:hover {
+    background: var(--axiom-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--axiom-primary-glow);
+}
+
+/* Shimmer / Skeleton Loading - visible on dark glass background */
+.axiom-shimmer {
+    background: linear-gradient(90deg,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.14) 40%,
+            rgba(255, 255, 255, 0.22) 50%,
+            rgba(255, 255, 255, 0.14) 60%,
+            rgba(255, 255, 255, 0.06) 100%);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 8px;
+    min-height: 60px;
+    width: 100%;
+    display: block;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Skeleton placeholder lines inside shimmer blocks (optional - use class axiom-shimmer-lines) */
+.axiom-shimmer.axiom-shimmer-lines {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+}
+
+.axiom-shimmer .shimmer-line {
+    height: 12px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    width: 100%;
+}
+
+.axiom-shimmer .shimmer-line.short {
+    width: 60%;
+}
+
+.axiom-shimmer .shimmer-line.medium {
+    width: 85%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Typewriter Effect */
+.typewriter-text {
+    overflow: hidden;
+    border-right: 2px solid var(--axiom-primary);
+    white-space: nowrap;
+    animation: typing 0.05s steps(1, end);
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .axiom-drawer {
+        width: 100%;
+        right: -100%;
+        z-index: 9999;
+    }
+
+    .axiom-drawer.active {
+        right: 0;
+    }
+
+    /* On mobile, drawer overlays content */
+    body.axiom-drawer-active:not(.mobile) .content-wrapper,
+    body.axiom-drawer-active:not(.mobile) .content,
+    body.axiom-drawer-active:not(.mobile) #wrapper {
+        margin-right: 0;
+    }
+
+    body.mobile.axiom-drawer-active .content-wrapper,
+    body.mobile.axiom-drawer-active .content,
+    body.mobile.axiom-drawer-active #wrapper {
+        margin-right: 0;
+    }
+
+    .dealpulse-gauge {
+        width: 150px;
+        height: 150px;
+    }
+
+    .smartchips-container {
+        padding: 8px 10px;
+    }
+
+    .smartchip {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+}
+
+/* Remove duplicate styles - handled above */
+
+/* Scrollbar Styling for Drawer */
+.axiom-drawer-body::-webkit-scrollbar,
+.stratpath-cards::-webkit-scrollbar,
+.deepquery-response::-webkit-scrollbar {
+    width: 6px;
+}
+
+.axiom-drawer-body::-webkit-scrollbar-track,
+.stratpath-cards::-webkit-scrollbar-track,
+.deepquery-response::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.axiom-drawer-body::-webkit-scrollbar-thumb,
+.stratpath-cards::-webkit-scrollbar-thumb,
+.deepquery-response::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.axiom-drawer-body::-webkit-scrollbar-thumb:hover,
+.stratpath-cards::-webkit-scrollbar-thumb:hover,
+.deepquery-response::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Send button highlight when content is inserted from Quick Reply / StratPath */
+#btn_submit.axiom-send-highlight {
+    animation: axiom-send-pulse 1.2s ease-in-out 2;
+}
+@keyframes axiom-send-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 224, 155, 0.5); transform: scale(1); }
+    50% { box-shadow: 0 0 0 10px rgba(0, 224, 155, 0); transform: scale(1.08); }
+}

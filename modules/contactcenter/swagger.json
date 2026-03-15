@@ -1,0 +1,127 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Contact Center API",
+        "version": "1.0"
+    },
+    "paths": {
+        "/contactcenter/api/text": {
+            "post": {
+                "tags": [
+                    "Messages"
+                ],
+                "summary": "Send a text message",
+                "operationId": "Api::text",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phonenumber",
+                                    "message"
+                                ],
+                                "properties": {
+                                    "phonenumber": {
+                                        "type": "int",
+                                        "example": "5511992115620"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "Hello World!"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Text sent successfully"
+                    },
+                    "400": {
+                        "description": "Missing required fields or invalid JSON format"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "auth": []
+                    }
+                ]
+            }
+        },
+        "/contactcenter/api/media": {
+            "post": {
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Send a media message",
+                "operationId": "Api::media",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "phonenumber",
+                                    "mediatype",
+                                    "url"
+                                ],
+                                "properties": {
+                                    "phonenumber": {
+                                        "type": "int",
+                                        "example": "5517992014550"
+                                    },
+                                    "mediatype": {
+                                        "type": "string",
+                                        "example": "image, video or document"
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "example": "https://example.com/media.png"
+                                    },
+                                    "caption": {
+                                        "type": "string",
+                                        "example": "This is an example caption"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Media sent successfully"
+                    },
+                    "400": {
+                        "description": "Missing required fields or invalid JSON format"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "auth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "auth": {
+                "type": "apiKey",
+                "description": "Token de autenticação no cabeçalho AXIOM-Authorization",
+                "name": "AXIOM-Authorization",
+                "in": "header",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}

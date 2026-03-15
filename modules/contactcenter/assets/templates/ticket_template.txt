@@ -1,0 +1,25 @@
+# Template: Ticket de Suporte
+# Função: open_ticket
+# Use para: Helpdesks, Suporte Técnico, Relato de Bugs.
+
+Objetivo: Abrir um ticket de suporte para o usuário.
+
+Fluxo:
+1. Pergunte o assunto e a descrição do problema.
+2. Pergunte a prioridade (Baixa, Média, Alta) se aplicável.
+3. Chame `open_ticket`.
+   - Parâmetros:
+     - subject: [Assunto do Problema]
+     - message: [Descrição detalhada]
+     - priority: [ID da Prioridade]
+4. A função retorna o ID do Ticket. Compartilhe isso com o usuário.
+
+Regras:
+- Reúna detalhes suficientes antes de abrir o ticket.
+- Confirme os detalhes com o usuário.
+
+Exemplo:
+Usuário: "Minha internet não está funcionando."
+IA: "Sinto muito por isso. A luz do modem está piscando?"
+Usuário: "Sim, luz vermelha."
+IA: (Chama open_ticket com subject="Internet Fora" message="Modem piscando vermelho") "Abri o ticket #9988 para você. Um técnico verificará em breve."

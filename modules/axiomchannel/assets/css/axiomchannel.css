@@ -1,0 +1,512 @@
+/* AxiomChannel — CSS principal */
+/* RT Marketing Estratégico */
+
+:root {
+  --axch-sidebar-width: 320px;
+  --axch-header-height: 60px;
+  --axch-primary: #5b5ef4;
+  --axch-primary-light: #ebebff;
+  --axch-outbound-bg: #5b5ef4;
+  --axch-outbound-text: #fff;
+  --axch-inbound-bg: #f0f0f0;
+  --axch-inbound-text: #333;
+  --axch-border: #e8e8e8;
+  --axch-sidebar-bg: #fff;
+  --axch-hover: #f7f7ff;
+  --axch-unread-bg: #f0f0ff;
+}
+
+/* ===================== LAYOUT ===================== */
+#axch-app {
+  display: flex;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ===================== SIDEBAR ===================== */
+.axch-sidebar {
+  width: var(--axch-sidebar-width);
+  min-width: var(--axch-sidebar-width);
+  background: var(--axch-sidebar-bg);
+  border-right: 1px solid var(--axch-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.axch-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--axch-border);
+  flex-shrink: 0;
+}
+
+.axch-logo {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--axch-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.axch-badge {
+  background: #e74c3c;
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.axch-search-wrap {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.axch-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  border: 1px solid var(--axch-border);
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+}
+
+.axch-search-input:focus {
+  border-color: var(--axch-primary);
+}
+
+.axch-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 13px;
+}
+
+.axch-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.axch-select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--axch-border);
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  background: #fff;
+}
+
+/* ===================== CONTACT LIST ===================== */
+.axch-contact-list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.axch-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background .15s;
+  cursor: pointer;
+}
+
+.axch-contact-item:hover {
+  background: var(--axch-hover);
+}
+
+.axch-contact-item.active {
+  background: var(--axch-primary-light);
+}
+
+.axch-contact-item.axch-unread {
+  background: var(--axch-unread-bg);
+}
+
+.axch-avatar {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.axch-avatar img,
+.axch-avatar span {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--axch-primary-light);
+  color: var(--axch-primary);
+  font-weight: 600;
+  font-size: 16px;
+  object-fit: cover;
+}
+
+.axch-status-dot {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.axch-status-open        { background: #2ecc71; }
+.axch-status-pending     { background: #f39c12; }
+.axch-status-resolved    { background: #bdc3c7; }
+.axch-status-bot         { background: var(--axch-primary); }
+.axch-status-connected   { background: #2ecc71; }
+.axch-status-disconnected{ background: #e74c3c; }
+
+.axch-contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.axch-contact-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 3px;
+}
+
+.axch-contact-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.axch-contact-time {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.axch-contact-preview {
+  font-size: 12px;
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.axch-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--axch-primary);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* ===================== MAIN PANEL ===================== */
+.axch-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f9f9f9;
+}
+
+.axch-empty-state {
+  align-items: center;
+  justify-content: center;
+}
+
+.axch-welcome {
+  text-align: center;
+  color: #aaa;
+}
+
+.axch-welcome h3 {
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+/* ===================== CHAT HEADER ===================== */
+.axch-chat-header {
+  height: var(--axch-header-height);
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--axch-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.axch-chat-header .axch-avatar {
+  width: 38px;
+  height: 38px;
+}
+
+.axch-chat-header .axch-avatar span,
+.axch-chat-header .axch-avatar img {
+  width: 38px;
+  height: 38px;
+  font-size: 14px;
+}
+
+.axch-chat-title {
+  flex: 1;
+}
+
+.axch-chat-title h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.axch-chat-title small {
+  font-size: 11px;
+  color: #999;
+}
+
+.axch-chat-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.axch-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--axch-border);
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.axch-btn:hover {
+  border-color: var(--axch-primary);
+  color: var(--axch-primary);
+}
+
+.axch-btn-primary {
+  background: var(--axch-primary);
+  color: #fff;
+  border-color: var(--axch-primary);
+}
+
+.axch-btn-primary:hover {
+  background: #4a4ddc;
+  color: #fff;
+}
+
+/* ===================== MESSAGES AREA ===================== */
+.axch-messages-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scrollbar-width: thin;
+}
+
+.axch-day-label {
+  text-align: center;
+  font-size: 11px;
+  color: #aaa;
+  margin: 10px 0;
+  position: relative;
+}
+
+.axch-day-label::before,
+.axch-day-label::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background: #e0e0e0;
+}
+
+.axch-day-label::before { left: 0; }
+.axch-day-label::after  { right: 0; }
+
+.axch-message {
+  display: flex;
+  max-width: 70%;
+}
+
+.axch-message.outbound {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.axch-message.inbound {
+  align-self: flex-start;
+}
+
+.axch-bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.axch-message.outbound .axch-bubble {
+  background: var(--axch-outbound-bg);
+  color: var(--axch-outbound-text);
+  border-bottom-right-radius: 3px;
+}
+
+.axch-message.inbound .axch-bubble {
+  background: var(--axch-inbound-bg);
+  color: var(--axch-inbound-text);
+  border-bottom-left-radius: 3px;
+}
+
+.axch-bubble-meta {
+  font-size: 10px;
+  margin-top: 3px;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.axch-message.outbound .axch-bubble-meta {
+  justify-content: flex-end;
+}
+
+/* ===================== INPUT AREA ===================== */
+.axch-input-area {
+  background: #fff;
+  border-top: 1px solid var(--axch-border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.axch-input-wrap {
+  flex: 1;
+  background: #f5f5f5;
+  border-radius: 22px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.axch-textarea {
+  flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  outline: none;
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: inherit;
+}
+
+.axch-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--axch-primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+
+.axch-send-btn:hover { background: #4a4ddc; }
+.axch-send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+/* ===================== EMPTY / LOADING ===================== */
+.axch-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #ccc;
+}
+
+.axch-empty i {
+  font-size: 36px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* ===================== DEVICES PAGE ===================== */
+.axch-device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.axch-device-card {
+  background: #fff;
+  border: 1px solid var(--axch-border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.axch-device-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.axch-device-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.axch-status-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.axch-status-badge.connected    { background: #d4edda; color: #155724; }
+.axch-status-badge.disconnected { background: #f8d7da; color: #721c24; }
+.axch-status-badge.connecting   { background: #fff3cd; color: #856404; }
+
+/* ===================== QR MODAL ===================== */
+.axch-qr-wrap {
+  text-align: center;
+  padding: 20px;
+}
+
+.axch-qr-wrap img {
+  max-width: 250px;
+  border-radius: 8px;
+}

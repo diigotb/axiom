@@ -1,0 +1,24 @@
+# Template: Criador de Contratos
+# Função: create_contract
+# Use para: Fechamento de Negócios, Contratos de Serviço, Propostas.
+
+Objetivo: Gerar um link de contrato para o lead assinar.
+
+Fluxo:
+1. Confirme os detalhes do acordo (Tipo de serviço, Valor, Duração).
+2. Chame `create_contract`.
+   - Parâmetros:
+     - title: Título do Contrato
+     - value: Valor do Contrato
+     - client_id: (Opcional, se mapeado)
+     - content: (Opcional, termos específicos)
+3. A função retorna um link. Envie este link para o usuário.
+
+Regras:
+- Certifique-se de que o lead está pronto para assinar antes de gerar.
+- Verifique o valor e os termos com o lead.
+
+Exemplo:
+IA: "Então estamos fechados no Plano Padrão por R$ 100/mês?"
+Usuário: "Sim."
+IA: (Chama create_contract) "Perfeito. Aqui está o link para assinar o contrato: [Link]"

@@ -1,0 +1,183 @@
+/* Assistant Templates - Tile Layout */
+.template-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.template-tile-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.template-tile-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.template-tile-card.template-system {
+  border-color: #a7f3d0;
+  background: linear-gradient(135deg, #f0fdfa 0%, #ecfdf5 100%);
+}
+
+.template-tile-visual {
+  position: relative;
+  height: 120px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.template-tile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.template-tile-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(15,118,110,0.3);
+}
+
+.template-tile-icon {
+  font-size: 28px;
+  color: #fff;
+}
+
+.template-tile-card.template-system .template-tile-icon-wrap {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+}
+
+.template-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.template-badge-system {
+  background: #0d9488;
+  color: #fff;
+}
+
+.template-tile-body {
+  padding: 16px;
+}
+
+.template-tile-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.template-tile-desc {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+  min-height: 36px;
+}
+
+.template-tile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.template-tile-actions .btn { white-space: nowrap; }
+
+.template-tile-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  text-decoration: none !important;
+  border-style: dashed;
+  border-color: #cbd5e1;
+  background: #fafbfc;
+}
+
+.template-tile-add:hover {
+  border-color: #0d9488;
+  background: #f0fdfa;
+}
+
+.template-tile-add-inner {
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.template-tile-add-inner i {
+  color: #64748b !important;
+}
+
+.template-tile-add-inner .tw-font-medium {
+  color: #334155 !important;
+  font-weight: 500;
+}
+
+.template-tile-add-inner .tw-text-sm {
+  color: #475569 !important;
+}
+
+.template-tile-add:hover .template-tile-add-inner i {
+  color: #0d9488 !important;
+}
+
+.template-tile-add:hover .template-tile-add-inner .tw-font-medium,
+.template-tile-add:hover .template-tile-add-inner .tw-text-sm {
+  color: #0f766e !important;
+}
+
+/* Advanced mode instructions styling */
+.inst-highlight-wrap {
+    background-color: #ffffff !important;
+    border-radius: 4px;
+}
+
+.inst-highlight-mirror {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+}
+
+/* Ensure textarea in advanced mode also has white background if needed */
+#instructionsAdvancedWrap textarea {
+    background-color: #ffffff !important;
+    color: #333333 !important;
+}
+
+.template-empty-state-full {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+}
+
+/* Active state for instruction mode buttons - force black icon */
+.instructions-mode-btn.active i {
+    color: #000000 !important;
+}

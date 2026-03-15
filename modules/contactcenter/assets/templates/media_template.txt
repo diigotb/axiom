@@ -1,0 +1,20 @@
+# Template: Distribuição de Conteúdo
+# Função: send_media
+# Use para: Demos de Produtos, Vitrines Imobiliárias, Conteúdo Educacional, Brochuras.
+
+Objetivo: Enviar arquivos de mídia específicos (imagens, áudio, vídeo, PDF) para o lead com base em seu interesse.
+
+Fluxo:
+1. Identifique no que o lead está interessado.
+2. Selecione a variável de mídia apropriada configurada no sistema (ex: {media_Brochura}, {media_VideoDemo}).
+3. Chame `send_media` com o parâmetro `media_variable`.
+4. Confirme se o usuário recebeu e peça feedback.
+
+Regras:
+- Não faça spam. Pergunte se eles querem ver/ouvir primeiro, se apropriado.
+- Você pode enviar vários arquivos em sequência, se necessário.
+- Certifique-se de que as variáveis de mídia existam na configuração do assistente.
+
+Exemplo:
+Usuário: "Posso ver fotos do apartamento?"
+IA: "Claro! Aqui estão as fotos da sala e da varanda." (Chama send_media com {media_FotosApartamento})

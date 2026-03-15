@@ -1,0 +1,53 @@
+# ======================
+# Perfex CRM + PHP
+# ======================
+
+# Ambiente e configuração sensível
+.env
+.env.*
+!.env.example
+
+# Dependências
+node_modules/
+vendor/
+
+# Uploads e arquivos de usuários
+uploads/
+
+# Cache e temporários
+application/cache/
+temp/
+
+# Logs
+application/logs/
+
+# Backups
+backups/
+
+# Arquivos de instalação (não vão para produção)
+perfex_crm_install_*/
+*.zip
+
+# Build do frontend
+assets/builds/
+
+# IDE e SO
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PHP
+*.log
+*.cache
+
+# Composer (remova se quiser versionar as dependências)
+# vendor/
+# composer.lock
+
+# NPM
+package-lock.json
+yarn.lock

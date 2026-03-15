@@ -1,0 +1,724 @@
+/**
+ * Omni Pilot Wizard CSS
+ * Using glassmorphism and theme colors from chat_single
+ */
+
+/* Pulsing animation for first-time users */
+.omni-pilot-pulse {
+    animation: omniPilotPulse 2s infinite;
+    position: relative;
+}
+
+.omni-pilot-pulse::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--primary, #00e09b);
+    transform: translate(-50%, -50%);
+    animation: omniPilotRing 2s infinite;
+}
+
+@keyframes omniPilotPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes omniPilotRing {
+    0% {
+        width: 100%;
+        height: 100%;
+        opacity: 1;
+    }
+    100% {
+        width: 150%;
+        height: 150%;
+        opacity: 0;
+    }
+}
+
+/* Bootstrap Select Dropdown - Force open below */
+.bootstrap-select .dropdown-menu {
+    top: 100% !important;
+    bottom: auto !important;
+    transform: none !important;
+}
+
+/* Wizard Modal Styles - Glassmorphism */
+#omniPilotWizardModal .modal-content {
+    border: none;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#omniPilotWizardModal .modal-header {
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .modal-header .close {
+    color: var(--primary-text, #FFFFFF);
+    opacity: 0.8;
+}
+
+#omniPilotWizardModal .modal-header .close:hover {
+    opacity: 1;
+}
+
+#omniPilotWizardModal .modal-body {
+    padding: 30px;
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .modal-footer {
+    padding: 15px 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Progress Steps */
+.omni-pilot-progress-bar {
+    background: #009e6e !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 224, 155, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 158, 110, 0.3);
+}
+
+.progress-steps {
+    position: relative;
+}
+
+.step-indicator {
+    position: relative;
+    z-index: 2;
+}
+
+.step-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.25);
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.step-indicator.active .step-circle {
+    background: var(--primary, #00e09b) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: rgba(0, 0, 0, 0.9) !important;
+    border-color: var(--primary, #00e09b);
+    box-shadow: 0 0 0 4px rgba(0, 224, 155, 0.3), 0 2px 8px rgba(0, 224, 155, 0.4);
+    font-weight: 700;
+}
+
+.step-indicator.completed .step-circle {
+    background: rgba(0, 224, 155, 0.6) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: rgba(0, 0, 0, 0.85) !important;
+    border-color: var(--primary, #00e09b);
+    font-weight: 700;
+}
+
+.step-connector {
+    position: absolute;
+    top: 17px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 1;
+    transition: background 0.3s ease;
+}
+
+.step-indicator.completed + .step-indicator .step-connector {
+    background: rgba(0, 224, 155, 0.5);
+}
+
+.step-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.9) !important;
+    margin-top: 5px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.step-indicator.active .step-label {
+    color: rgba(255, 255, 255, 1);
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.step-indicator.completed .step-label {
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Wizard Steps */
+.wizard-step {
+    min-height: 400px;
+}
+
+.wizard-step h5 {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    color: var(--primary-text, #FFFFFF);
+}
+
+/* Message Cards - Glassmorphism */
+.message-card {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: var(--primary-text, #FFFFFF);
+}
+
+.message-card:hover {
+    border-color: var(--primary, #00e09b);
+    background: rgba(0, 224, 155, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 224, 155, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.message-card.selected {
+    border-color: var(--primary, #00e09b) !important;
+    background: rgba(0, 224, 155, 0.25) !important;
+    box-shadow: 0 0 0 3px rgba(0, 224, 155, 0.4) !important;
+}
+
+/* Approach Cards - Glassmorphism */
+.omni-approach-card {
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.omni-approach-card:hover {
+    border-color: var(--primary, #00e09b) !important;
+    background: rgba(0, 224, 155, 0.15) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 224, 155, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+.omni-approach-card.selected {
+    border-color: var(--primary, #00e09b) !important;
+    background: rgba(0, 224, 155, 0.25) !important;
+    box-shadow: 0 0 0 3px rgba(0, 224, 155, 0.4) !important;
+    transform: translateY(-2px);
+}
+
+.omni-approach-card.selected .fa {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* Follow-up Timeline - Glassmorphism */
+.followup-slot {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: all 0.3s ease;
+    color: var(--primary-text, #FFFFFF);
+}
+
+.followup-slot:hover {
+    border-color: var(--primary, #00e09b);
+    background: rgba(0, 224, 155, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 224, 155, 0.2);
+}
+
+.followup-slot .badge {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+/* File Upload Area - Glassmorphism */
+.file-upload-area {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: var(--primary-text, #FFFFFF);
+}
+
+.file-upload-area:hover {
+    border-color: var(--primary, #00e09b);
+    background: rgba(0, 224, 155, 0.1);
+}
+
+.file-upload-area.dragover {
+    border-color: var(--primary, #00e09b);
+    background: rgba(0, 224, 155, 0.15);
+    transform: scale(1.02);
+}
+
+/* Progress Badge - Glassmorphism */
+#omniPilotProgressBadge {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    min-width: 300px;
+    z-index: 9999;
+    animation: slideInUp 0.3s ease;
+    color: var(--primary-text, #FFFFFF);
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+#omniPilotProgressBadge .progress {
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+#omniPilotProgressBadge .progress-bar {
+    background: linear-gradient(90deg, var(--primary, #00e09b), rgba(0, 224, 155, 0.7));
+}
+
+/* Omni Pilot Progress Container in Footer Bar */
+#omniPilotProgressContainer {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 10px 12px;
+}
+
+#omniPilotProgressContainer .progress {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 8px !important;
+}
+
+#omniPilotProgressContainer .progress-bar {
+    background: linear-gradient(90deg, var(--primary, #00e09b), rgba(0, 224, 155, 0.7)) !important;
+    background-size: 40px 100% !important;
+    transition: width 0.3s ease !important;
+    min-width: 2px;
+}
+
+#omniPilotProgressContainer .progress-bar.active {
+    animation: progress-bar-stripes 1s linear infinite !important;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent) !important;
+    background-size: 40px 40px !important;
+}
+
+@keyframes progress-bar-stripes {
+    0% {
+        background-position: 40px 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}
+
+#omniPilotSpinner {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#omniPilotSpinner.fa-spin {
+    animation: fa-spin 1s infinite linear !important;
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#omniPilotProgressBadge h6 {
+    margin: 0 0 15px 0;
+    color: var(--primary-text, #FFFFFF);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#omniPilotProgressBadge #omni_progress_details {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+#omniPilotProgressBadge #omni_progress_details div {
+    margin-bottom: 5px;
+}
+
+#omniPilotProgressBadge #omni_progress_details strong {
+    color: var(--primary-text, #FFFFFF);
+}
+
+/* Select Elements - Glassmorphism */
+#omniPilotWizardModal select.form-control,
+#omniPilotWizardModal .bootstrap-select .dropdown-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal select.form-control:focus,
+#omniPilotWizardModal .bootstrap-select .dropdown-toggle:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary, #00e09b);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .bootstrap-select .dropdown-menu {
+    background: rgba(30, 30, 30, 0.95) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#omniPilotWizardModal .bootstrap-select .dropdown-menu li a {
+    color: var(--primary-text, #FFFFFF) !important;
+    padding: 8px 15px;
+}
+
+#omniPilotWizardModal .bootstrap-select .dropdown-menu li a:hover,
+#omniPilotWizardModal .bootstrap-select .dropdown-menu li.selected a {
+    background: rgba(0, 224, 155, 0.2);
+    color: var(--primary-text, #FFFFFF);
+}
+
+/* Modal Backdrop */
+#omniPilotWizardModal.modal.show ~ .modal-backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+/* Text Colors */
+#omniPilotWizardModal,
+#omniPilotWizardModal p,
+#omniPilotWizardModal span:not(.badge),
+#omniPilotWizardModal div {
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Badge Styles */
+#omniPilotWizardModal .badge {
+    background: rgba(0, 224, 155, 0.2);
+    color: var(--primary-text, #FFFFFF);
+    border: 1px solid rgba(0, 224, 155, 0.3);
+}
+
+/* Tabs */
+#omniPilotWizardModal .nav-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#omniPilotWizardModal .nav-tabs .nav-link {
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#omniPilotWizardModal .nav-tabs .nav-link:hover {
+    color: var(--primary-text, #FFFFFF);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+#omniPilotWizardModal .nav-tabs .nav-link.active {
+    color: var(--primary-text, #FFFFFF);
+    background: rgba(0, 224, 155, 0.15);
+    border-color: var(--primary, #00e09b);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #omniPilotWizardModal .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100%;
+    }
+    
+    #omniPilotWizardModal .modal-content {
+        height: 100%;
+        border-radius: 0;
+    }
+    
+    #omniPilotWizardModal .modal-body {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    
+    .step-label {
+        font-size: 9px;
+    }
+    
+    .step-circle {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+    
+    #omniPilotProgressBadge {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+    }
+}
+
+/* Loading States */
+.omni-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.omni-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--primary, #00e09b);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Form Enhancements */
+#omniPilotWizardModal .form-group {
+    margin-bottom: 20px;
+}
+
+#omniPilotWizardModal label {
+    font-weight: 500;
+    color: var(--primary-text, #FFFFFF);
+    margin-bottom: 8px;
+}
+
+#omniPilotWizardModal .form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .form-control:focus {
+    border-color: var(--primary, #00e09b);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 0.2rem rgba(0, 224, 155, 0.25);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Button Styles - Theme Colors */
+#omniPilotWizardModal .btn-primary {
+    background: rgba(0, 224, 155, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--primary, #00e09b);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .btn-primary:hover {
+    background: rgba(0, 224, 155, 0.35);
+    border-color: var(--primary, #00e09b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 224, 155, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+#omniPilotWizardModal .btn-success {
+    background: rgba(0, 224, 155, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--primary, #00e09b);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omniPilotWizardModal .btn-success:hover {
+    background: rgba(0, 224, 155, 0.4);
+    border-color: var(--primary, #00e09b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 224, 155, 0.3);
+}
+
+/* Alert Styles - Glassmorphism */
+#omniPilotWizardModal .alert {
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#omniPilotWizardModal .alert-info {
+    background: rgba(59, 130, 246, 0.15);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+#omniPilotWizardModal .alert-warning {
+    background: rgba(251, 146, 60, 0.15);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(251, 146, 60, 0.3);
+}
+
+#omniPilotWizardModal .alert-success {
+    background: rgba(0, 224, 155, 0.15);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 224, 155, 0.3);
+}
+
+/* Table Styles - Glassmorphism */
+#omni_leads_preview table {
+    font-size: 13px;
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omni_leads_preview th {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-weight: 600;
+    color: var(--primary-text, #FFFFFF);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#omni_leads_preview td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#omni_leads_preview tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Sample Interaction - Glassmorphism */
+.sample-interaction {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 10px;
+    border-left: 3px solid var(--primary, #00e09b);
+    color: var(--primary-text, #FFFFFF);
+}
+
+.sample-interaction strong {
+    color: var(--primary, #00e09b);
+}
+
+.sample-interaction p {
+    margin-top: 10px;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Launch Summary - Glassmorphism */
+#omni_launch_summary {
+    text-align: left;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 224, 155, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--primary-text, #FFFFFF);
+}
+
+#omni_launch_summary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#omni_launch_summary li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#omni_launch_summary li:last-child {
+    border-bottom: none;
+}
+
+#omni_launch_summary .fa-check {
+    color: var(--primary, #00e09b);
+    margin-right: 8px;
+}

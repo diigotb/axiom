@@ -1,0 +1,35 @@
+
+/* Instruction Presets Tiles */
+.inst-presets-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.inst-preset-tile {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.inst-preset-tile:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    color: #1e293b;
+    transform: translateY(-1px);
+}
+
+.inst-preset-tile i {
+    font-size: 10px;
+    opacity: 0.7;
+}

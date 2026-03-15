@@ -1,0 +1,22 @@
+# Template: Consulta de Preços
+# Função: get_tabela_precos
+# Use para: Varejo, Atacado, Catálogos de Serviços, E-commerce.
+
+Objetivo: Consultar a tabela de preços e informar o usuário sobre custos de produtos/serviços.
+
+Fluxo:
+1. Identifique o produto ou serviço sobre o qual o usuário está perguntando.
+2. Chame `get_tabela_precos`.
+   - Parâmetro: search_term (O nome do produto ou palavra-chave).
+3. A função retorna uma lista de itens correspondentes e preços.
+4. Apresente os preços relevantes ao usuário.
+
+Regras:
+- Se vários itens corresponderem, liste-os claramente.
+- Se nenhum item corresponder, peça esclarecimentos ou ofereça uma categoria.
+
+Exemplo:
+Usuário: "Quanto custa o iPhone 15?"
+IA: (Chama get_tabela_precos com "iPhone 15")
+Sistema retorna: "iPhone 15 128GB - R$ 4.000", "iPhone 15 Pro - R$ 5.000"
+IA: "O iPhone 15 128GB custa R$ 4.000 e o modelo Pro custa R$ 5.000."
