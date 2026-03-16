@@ -1747,10 +1747,25 @@ Regras:
 
     public function meta_connect()
     {
-        $data['title']   = 'Conectar Facebook & Instagram';
-        $data['devices'] = $this->axiomchannel_model->get_devices();
-        $data['app_id']  = get_option('axch_meta_app_id') ?: '';
+        $data['title']           = 'Conectar Facebook & Instagram';
+        $data['devices']         = $this->axiomchannel_model->get_devices();
+        $device_id               = !empty($data['devices']) ? $data['devices'][0]->id : null;
+        $data['meta_connection'] = $device_id ? $this->axiomchannel_model->get_meta_connection($device_id) : null;
         $this->load->view('axiomchannel/meta/connect', $data);
+    }
+
+    public function meta_disconnect()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $device_id = (int)$this->input->post('device_id');
+        if ($device_id) {
+            $this->db->update(
+                db_prefix() . 'axch_meta_connections',
+                ['is_active' => 0],
+                ['device_id' => $device_id]
+            );
+        }
+        echo json_encode(['success' => true]);
     }
 
     public function meta_save()

@@ -55,7 +55,7 @@ init_head();
             </button>
           </div>
           <div style="margin-top:8px">
-            <a href="<?= admin_url('axiomchannel/meta_connect') ?>"
+            <a href="<?= admin_url('axiomchannel/meta_connect') ?>?device_id=<?= $d->id ?>"
                class="ax-btn ax-btn-sm ax-w-full"
                style="background:#f0f2ff;color:#5A67D8;border:1px solid #c3c9f8;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px">
               <i class="fa fa-facebook-square" style="color:#1877F2"></i>

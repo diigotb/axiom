@@ -51,7 +51,8 @@ $route['axiomchannel/google_calendar_save']        = 'axiomchannel/google_calend
 $route['axiomchannel/meta_connect']     = 'axiomchannel/meta_connect';
 $route['axiomchannel/meta_save']        = 'axiomchannel/meta_save';
 $route['axiomchannel/meta_webhook']     = 'axiomchannel/meta_webhook';
-$route['axiomchannel/meta_send_message'] = 'axiomchannel/meta_send_message';
+$route['axiomchannel/meta_send_message']  = 'axiomchannel/meta_send_message';
+$route['axiomchannel/meta_disconnect']    = 'axiomchannel/meta_disconnect';
 
 // CONTRACTS
 $route['axiomchannel/contracts']                   = 'axiomchannel/contracts';
