@@ -1433,6 +1433,70 @@ As palavras-chave devem ser termos que o cliente usaria para avançar para o pr�
     }
 
     // ============================================================
+    // AUTOMATIONS
+    // ============================================================
+
+    public function automations()
+    {
+        $devices    = $this->axiomchannel_model->get_devices();
+        $device_id  = $this->input->get('device_id') ?: ($devices[0]->id ?? null);
+
+        $automations = $device_id
+            ? $this->db->get_where(db_prefix() . 'axch_automations', ['device_id' => $device_id])->result()
+            : [];
+
+        $data['title']       = 'Automações';
+        $data['devices']     = $devices;
+        $data['device_id']   = $device_id;
+        $data['automations'] = $automations;
+        $this->load->view('axiomchannel/automations/index', $data);
+    }
+
+    public function automation_save()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $id        = (int) $this->input->post('id');
+        $device_id = (int) $this->input->post('device_id');
+        $data = [
+            'device_id'    => $device_id,
+            'type'         => $this->input->post('type'),
+            'template'     => $this->input->post('template'),
+            'trigger_days' => (int) $this->input->post('trigger_days') ?: 1,
+            'max_attempts' => (int) $this->input->post('max_attempts') ?: 3,
+            'is_active'    => (int) $this->input->post('is_active'),
+            'updated_at'   => date('Y-m-d H:i:s'),
+        ];
+
+        if ($id) {
+            $this->db->update(db_prefix() . 'axch_automations', $data, ['id' => $id]);
+        } else {
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $this->db->insert(db_prefix() . 'axch_automations', $data);
+            $id = $this->db->insert_id();
+        }
+
+        echo json_encode(['success' => true, 'id' => $id]);
+    }
+
+    public function automation_delete()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $id = (int) $this->input->post('id');
+        $this->db->delete(db_prefix() . 'axch_automations', ['id' => $id]);
+        echo json_encode(['success' => true]);
+    }
+
+    public function automation_toggle()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $id        = (int) $this->input->post('id');
+        $is_active = (int) $this->input->post('is_active');
+        $this->db->update(db_prefix() . 'axch_automations', ['is_active' => $is_active], ['id' => $id]);
+        echo json_encode(['success' => true]);
+    }
+
+    // ============================================================
     // CONTRACTS
     // ============================================================
 
@@ -1465,7 +1529,7 @@ As palavras-chave devem ser termos que o cliente usaria para avançar para o pr�
         $devices   = $this->axiomchannel_model->get_devices();
         $device_id = $device_id ?: ($devices[0]->id ?? null);
         $templates = $this->axiomchannel_model->get_contract_templates($device_id);
-        $contacts  = $this->axiomchannel_model->get_contacts($device_id);
+        $contacts  = $this->axiomchannel_model->get_contacts(['device_id' => $device_id]);
 
         $data = [
             'title'     => 'Novo Contrato',
@@ -1525,8 +1589,8 @@ As palavras-chave devem ser termos que o cliente usaria para avançar para o pr�
         $message = "Olá {$contact->name}! 👋\n\nSeu contrato *{$contract->title}* está pronto para assinatura.\n\nAcesse o link abaixo para visualizar e assinar:\n{$sign_url}\n\n_Este link é único e intransferível._";
 
         // Envia via Evolution API
-        $this->load->library('AxiomChannel_Evolution');
-        $result = $this->axiomchannel_evolution->send_text($device->instance_name, $contact->phone_number, $message);
+        $evo    = $this->_get_evolution($device);
+        $result = $evo->send_text($contact->phone_number, $message);
 
         $this->axiomchannel_model->update_contract($id, [
             'status'  => 'sent',
@@ -1979,6 +2043,267 @@ Regras:
             echo json_encode(['success' => true]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Erro ao enviar: ' . $response]);
+        }
+    }
+
+    public function dashboard()
+    {
+        $hoje = date('Y-m-d');
+
+        // Mensagens por canal hoje
+        $canais = $this->db->query("
+            SELECT COALESCE(channel,'whatsapp') as channel,
+                   COUNT(DISTINCT contact_id) as total
+            FROM tblaxch_messages
+            WHERE DATE(created_at) = '{$hoje}'
+            GROUP BY channel
+        ")->result();
+
+        // IA performance
+        $ia_total = $this->db->query("
+            SELECT COUNT(*) as total FROM tblaxch_messages
+            WHERE DATE(created_at) = '{$hoje}'
+            AND direction = 'outbound' AND sent_by_ai = 1
+        ")->row()->total;
+
+        $conv_total = $this->db->query("
+            SELECT COUNT(DISTINCT contact_id) as total
+            FROM tblaxch_messages WHERE DATE(created_at) = '{$hoje}'
+        ")->row()->total;
+
+        $ia_pct = $conv_total > 0 ? round(($ia_total / $conv_total) * 100) : 0;
+
+        $ia_transferiu = $this->db->query("
+            SELECT COUNT(*) as total FROM tblaxch_contacts
+            WHERE DATE(updated_at) = '{$hoje}' AND status = 'pending'
+        ")->row()->total;
+
+        $ag_ia = $this->db->query("
+            SELECT COUNT(*) as total FROM tblaxch_appointments
+            WHERE DATE(created_at) = '{$hoje}' AND created_by = 'ai'
+        ")->row()->total;
+
+        $contratos_ia = $this->db->query("
+            SELECT COUNT(*) as total FROM tblaxch_contracts
+            WHERE DATE(sent_at) = '{$hoje}'
+        ")->row()->total;
+
+        // Tempo médio de resposta da IA (segundos)
+        $tempo_row = $this->db->query("
+            SELECT AVG(TIMESTAMPDIFF(SECOND, m1.created_at, m2.created_at)) as avg_t
+            FROM tblaxch_messages m1
+            JOIN tblaxch_messages m2 ON m2.contact_id = m1.contact_id
+            WHERE m1.direction = 'inbound' AND m2.direction = 'outbound'
+            AND DATE(m1.created_at) = '{$hoje}' AND m2.created_at > m1.created_at
+            AND m2.sent_by_ai = 1
+        ")->row();
+        $tempo = round($tempo_row->avg_t ?? 0);
+
+        // Automações disparadas hoje
+        $automacoes = $this->db->query("
+            SELECT a.type, COUNT(l.id) as total
+            FROM tblaxch_automations a
+            LEFT JOIN tblaxch_automation_log l
+              ON l.automation_id = a.id AND DATE(l.sent_at) = '{$hoje}'
+            WHERE a.is_active = 1
+            GROUP BY a.type
+        ")->result();
+
+        // Pipeline
+        $pipeline_data = [];
+        $pipelines = $this->db->get('tblaxch_pipelines')->result();
+        if (!empty($pipelines)) {
+            $stages = $this->db->where('pipeline_id', $pipelines[0]->id)
+                ->order_by('position', 'ASC')
+                ->get('tblaxch_pipeline_stages')->result();
+            foreach ($stages as $s) {
+                $total = $this->db->where('stage_id', $s->id)
+                    ->count_all_results('tblaxch_crm_leads');
+                $pipeline_data[] = ['name' => $s->name, 'color' => $s->color, 'total' => $total];
+            }
+        }
+
+        // Conversas abertas recentes
+        $recentes = $this->db->query("
+            SELECT c.*,
+              (SELECT content FROM tblaxch_messages WHERE contact_id = c.id ORDER BY created_at DESC LIMIT 1) as last_msg
+            FROM tblaxch_contacts c
+            WHERE c.status = 'open'
+            ORDER BY c.last_message_at DESC LIMIT 5
+        ")->result();
+
+        $data['title']         = 'Dashboard AXIOM';
+        $data['canais']        = $canais;
+        $data['ia_total']      = $ia_total;
+        $data['conv_total']    = $conv_total;
+        $data['ia_pct']        = $ia_pct;
+        $data['ia_transferiu'] = $ia_transferiu;
+        $data['ag_ia']         = $ag_ia;
+        $data['contratos_ia']  = $contratos_ia;
+        $data['tempo']         = $tempo;
+        $data['automacoes']    = $automacoes;
+        $data['pipeline']      = $pipeline_data;
+        $data['recentes']      = $recentes;
+        $data['devices']       = $this->db->get('tblaxch_devices')->result();
+
+        $this->load->view('axiomchannel/dashboard', $data);
+    }
+
+    // ============================================================
+    // SPA — Single Page Application
+    // ============================================================
+
+    public function spa()
+    {
+        $data['title'] = 'AXIOM';
+        $this->load->view('axiomchannel/spa/index', $data);
+    }
+
+    public function spa_page($page = 'dashboard')
+    {
+        $pages = [
+            'dashboard','conversas','pipeline','assistente',
+            'automacoes','agendamentos','contratos','dispositivos',
+            'clientes','financeiro','relatorios','leads'
+        ];
+
+        if (!in_array($page, $pages)) {
+            echo '<p style="color:rgba(255,255,255,.4)">Página não encontrada.</p>';
+            return;
+        }
+
+        $hoje = date('Y-m-d');
+        $data = [];
+        $data['csrf_token'] = $this->security->get_csrf_hash();
+        $data['csrf_name']  = $this->security->get_csrf_token_name();
+
+        switch ($page) {
+            case 'dashboard':
+                $mes     = date('Y-m');
+                $mes_ant = date('Y-m', strtotime('-1 month'));
+
+                // Filtro por device: admin vê tudo, atendente vê só o seu device
+                $device_scope = axch_get_device_scope();
+                $scope_str    = !empty($device_scope) ? implode(',', array_map('intval', $device_scope)) : '0';
+                $data['is_admin'] = axch_is_admin();
+
+                $data['fat_atual']      = $this->db->query("SELECT COALESCE(SUM(total),0) as t FROM tblinvoices WHERE DATE_FORMAT(date,'%Y-%m')='{$mes}' AND status=2")->row()->t;
+                $data['fat_ant']        = $this->db->query("SELECT COALESCE(SUM(total),0) as t FROM tblinvoices WHERE DATE_FORMAT(date,'%Y-%m')='{$mes_ant}' AND status=2")->row()->t;
+                $data['fat_pct']        = $data['fat_ant'] > 0 ? round((($data['fat_atual'] - $data['fat_ant']) / $data['fat_ant']) * 100) : 0;
+                $data['conv_hoje']      = $this->db->query("SELECT COUNT(DISTINCT contact_id) as t FROM tblaxch_messages WHERE DATE(created_at)='{$hoje}' AND device_id IN ({$scope_str})")->row()->t;
+                $data['ia_hoje']        = $this->db->query("SELECT COUNT(*) as t FROM tblaxch_messages WHERE DATE(created_at)='{$hoje}' AND direction='outbound' AND sent_by_ai=1 AND device_id IN ({$scope_str})")->row()->t;
+                $data['leads_hoje']     = $this->db->query("SELECT COUNT(*) as t FROM tblleads WHERE DATE(dateadded)='{$hoje}'")->row()->t;
+                $data['ag_hoje']        = $this->db->query("SELECT a.*,c.name as cn FROM tblaxch_appointments a LEFT JOIN tblaxch_contacts c ON c.id=a.contact_id WHERE DATE(a.start_datetime)='{$hoje}' AND a.status!='cancelled' ORDER BY a.start_datetime ASC LIMIT 5")->result();
+                $data['devices']        = $this->axiomchannel_model->get_devices();
+                $data['recentes']       = $this->db->query("SELECT c.*,(SELECT content FROM tblaxch_messages WHERE contact_id=c.id ORDER BY created_at DESC LIMIT 1) as lm FROM tblaxch_contacts c WHERE c.status='open' AND c.device_id IN ({$scope_str}) ORDER BY c.last_message_at DESC LIMIT 5")->result();
+                $data['pipeline_stages'] = [];
+                $pipelines = $this->axiomchannel_model->get_pipelines();
+                if (!empty($pipelines)) {
+                    $stages = $this->axiomchannel_model->get_stages($pipelines[0]->id);
+                    foreach ($stages as $s) {
+                        $s->total = $this->db->where('stage_id', $s->id)->count_all_results(db_prefix() . 'axch_crm_leads');
+                        $data['pipeline_stages'][] = $s;
+                    }
+                }
+                break;
+
+            case 'conversas':
+                $data['contacts'] = $this->db->query("SELECT c.*,(SELECT content FROM tblaxch_messages WHERE contact_id=c.id ORDER BY created_at DESC LIMIT 1) as lm FROM tblaxch_contacts c ORDER BY c.last_message_at DESC LIMIT 30")->result();
+                break;
+
+            case 'pipeline':
+                $data['pipelines']      = $this->axiomchannel_model->get_pipelines();
+                $data['stages']         = [];
+                $data['leads_by_stage'] = [];
+                if (!empty($data['pipelines'])) {
+                    $data['stages'] = $this->axiomchannel_model->get_stages($data['pipelines'][0]->id);
+                    foreach ($data['stages'] as $s) {
+                        $data['leads_by_stage'][$s->id] = $this->axiomchannel_model->get_crm_leads($data['pipelines'][0]->id, $s->id);
+                    }
+                }
+                break;
+
+            case 'assistente':
+                $data['devices']   = $this->axiomchannel_model->get_devices();
+                $device_id = !empty($data['devices']) ? $data['devices'][0]->id : null;
+                $data['assistant'] = $device_id ? $this->axiomchannel_model->get_assistant($device_id) : null;
+                $data['knowledge'] = $data['assistant'] ? $this->axiomchannel_model->get_knowledge_base($data['assistant']->id) : [];
+                break;
+
+            case 'agendamentos':
+                $data['appointments'] = $this->db->query("SELECT a.*,c.name as cn FROM tblaxch_appointments a LEFT JOIN tblaxch_contacts c ON c.id=a.contact_id WHERE a.status!='cancelled' ORDER BY a.start_datetime ASC LIMIT 20")->result();
+                $data['devices']      = $this->axiomchannel_model->get_devices();
+                break;
+
+            case 'contratos':
+                $data['contracts'] = $this->db->query("SELECT c.*,ct.name as cn FROM tblaxch_contracts c LEFT JOIN tblaxch_contacts ct ON ct.id=c.contact_id ORDER BY c.created_at DESC LIMIT 20")->result();
+                break;
+
+            case 'dispositivos':
+                $data['devices'] = $this->axiomchannel_model->get_devices();
+                break;
+
+            case 'clientes':
+                $data['clients'] = $this->db->query("SELECT * FROM tblclients ORDER BY datecreated DESC LIMIT 20")->result();
+                break;
+
+            case 'financeiro':
+                $data['invoices'] = $this->db->query("SELECT i.*,c.company FROM tblinvoices i LEFT JOIN tblclients c ON c.userid=i.clientid ORDER BY i.date DESC LIMIT 20")->result();
+                break;
+
+            case 'automacoes':
+                $data['automations'] = $this->db->get(db_prefix() . 'axch_automations')->result();
+                break;
+
+            case 'relatorios':
+                break;
+
+            case 'leads':
+                $data['contacts'] = $this->db->query("
+                    SELECT c.*,
+                      (SELECT content FROM tblaxch_messages
+                       WHERE contact_id=c.id
+                       ORDER BY created_at DESC LIMIT 1) as lm,
+                      (SELECT COUNT(*) FROM tblaxch_messages
+                       WHERE contact_id=c.id) as msg_count
+                    FROM tblaxch_contacts c
+                    ORDER BY c.last_message_at DESC
+                    LIMIT 50
+                ")->result();
+                break;
+        }
+
+        $data['page'] = $page;
+        $this->load->view('axiomchannel/spa/pages/' . $page, $data);
+    }
+
+    public function save_theme()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $staff_id = get_staff_user_id();
+        $theme    = $this->input->post('theme') ?: 'dark';
+        $accent   = $this->input->post('accent_color') ?: '#2D7A6B';
+        $val = json_encode(['theme' => $theme, 'accent_color' => $accent]);
+        $exists = $this->db->get_where('tblstaff_meta', ['staffid' => $staff_id, 'meta_key' => 'axiom_theme'])->row();
+        if ($exists) {
+            $this->db->update('tblstaff_meta', ['meta_value' => $val], ['staffid' => $staff_id, 'meta_key' => 'axiom_theme']);
+        } else {
+            $this->db->insert('tblstaff_meta', ['staffid' => $staff_id, 'meta_key' => 'axiom_theme', 'meta_value' => $val]);
+        }
+        echo json_encode(['success' => true]);
+    }
+
+    public function get_theme()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $staff_id = get_staff_user_id();
+        $row = $this->db->get_where('tblstaff_meta', ['staffid' => $staff_id, 'meta_key' => 'axiom_theme'])->row();
+        $default = ['theme' => 'dark', 'accent_color' => '#2D7A6B'];
+        if ($row && $row->meta_value) {
+            $pref = json_decode($row->meta_value, true);
+            echo json_encode(array_merge($default, $pref));
+        } else {
+            echo json_encode($default);
         }
     }
 

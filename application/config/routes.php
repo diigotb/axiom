@@ -58,7 +58,21 @@ $route['translate_uri_dashes'] = false;
 /**
  * Dashboard clean route
  */
-$route['admin'] = 'admin/dashboard';
+$route['admin'] = 'admin/Axiom_dashboard/index';
+
+/**
+ * Axiom Dashboard → SPA direto (sem duplo redirect)
+ */
+$route['axiom-dashboard']             = 'axiomchannel/spa';
+$route['admin/dashboard']             = 'axiomchannel/spa';
+$route['admin/Axiom-dashboard/index'] = 'axiomchannel/spa';
+$route['admin/axiom-dashboard']       = 'axiomchannel/spa';
+
+/**
+ * Admin tasks redirect (admin/admin-tasks → admin/tasks)
+ */
+$route['admin/admin-tasks']          = 'admin/tasks/index';
+$route['admin/admin-tasks/(:any)']   = 'admin/tasks/index/$1';
 
 /**
  * Misc controller routes
