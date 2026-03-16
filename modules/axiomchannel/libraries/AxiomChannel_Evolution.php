@@ -100,6 +100,16 @@ class AxiomChannel_Evolution
         ]);
     }
 
+    public function send_video($phone, $url, $caption = '')
+    {
+        return $this->request('POST', "/message/sendMedia/{$this->instance}", [
+            'number'    => $this->format_phone($phone),
+            'mediatype' => 'video',
+            'media'     => $url,
+            'caption'   => $caption,
+        ]);
+    }
+
     public function send_reaction($phone, $message_id, $emoji)
     {
         return $this->request('POST', "/message/sendReaction/{$this->instance}", [

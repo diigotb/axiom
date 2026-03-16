@@ -1011,4 +1011,28 @@
 .ax-text-teal   { color: var(--ax-teal); }
 .ax-text-navy   { color: var(--ax-navy); }
 .ax-w-full      { width: 100%; }
+
+/* ============================================================
+   COPILOTO IA — painel lateral direito
+   ============================================================ */
+.ax-copilot{width:260px;min-width:260px;background:#fff;border-left:1px solid var(--ax-gray-200);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.ax-copilot-header{padding:12px 14px;border-bottom:1px solid var(--ax-gray-100);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ax-copilot-title{font-size:12px;font-weight:600;color:var(--ax-navy)}
+.ax-copilot-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ax-copilot-section{display:flex;flex-direction:column;gap:6px}
+.ax-copilot-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--ax-gray-400)}
+.ax-sentiment{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.ax-sentiment-neutro{background:var(--ax-gray-100);color:var(--ax-gray-600)}
+.ax-sentiment-interessado{background:var(--ax-teal-light);color:var(--ax-teal)}
+.ax-sentiment-hesitante{background:var(--ax-warning-light);color:#7B341E}
+.ax-sentiment-pronto{background:var(--ax-success-light);color:#276749}
+.ax-tag-pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;background:var(--ax-navy-light);color:var(--ax-navy);margin:1px}
+.ax-sugg-card{background:var(--ax-gray-50);border:1px solid var(--ax-gray-200);border-radius:8px;padding:10px}
+.ax-sugg-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--ax-teal);margin-bottom:4px}
+.ax-sugg-text{font-size:11px;color:var(--ax-gray-600);line-height:1.5}
+.ax-sugg-btn{font-size:10px;color:var(--ax-teal);background:none;border:1px solid var(--ax-teal);border-radius:12px;padding:2px 10px;cursor:pointer;margin-top:6px;transition:all .15s}
+.ax-sugg-btn:hover{background:var(--ax-teal);color:#fff}
+.ax-copilot-refresh{background:none;border:none;cursor:pointer;color:var(--ax-gray-400);font-size:12px;padding:2px 4px;border-radius:4px;transition:color .15s}
+.ax-copilot-refresh:hover{color:var(--ax-teal)}
+.ax-copilot-loader{display:flex;align-items:center;justify-content:center;padding:24px;color:var(--ax-gray-400);font-size:12px;gap:6px}
 .ax-truncate    { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
