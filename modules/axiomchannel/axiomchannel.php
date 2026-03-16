@@ -21,6 +21,7 @@ if (!defined('AXIOMCHANNEL_MODULE')) {
 // -------------------------------------------------------
 hooks()->add_action('admin_init', 'axiomchannel_init_menu');
 hooks()->add_action('app_admin_head', 'axiomchannel_add_assets');
+hooks()->add_action('admin_head', 'axiomchannel_add_assets');
 
 // Cron
 register_cron_task('axiomchannel_process_queue');
@@ -45,10 +46,18 @@ function axiomchannel_init_menu()
 
     $CI->app_menu->add_sidebar_children_item('axiomchannel', [
         'slug'     => 'axiomchannel-inbox',
-        'name'     => 'Inbox',
+        'name'     => 'Todas as Conversas',
         'href'     => admin_url('axiomchannel/inbox'),
         'icon'     => 'fa fa-inbox',
         'position' => 1,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('axiomchannel', [
+        'slug'     => 'axiomchannel-pipeline',
+        'name'     => 'CRM Pipeline',
+        'href'     => admin_url('axiomchannel/pipeline'),
+        'icon'     => 'fa fa-columns',
+        'position' => 3,
     ]);
 
     $CI->app_menu->add_sidebar_children_item('axiomchannel', [
@@ -58,6 +67,30 @@ function axiomchannel_init_menu()
         'icon'     => 'fa fa-mobile',
         'position' => 2,
     ]);
+
+    $CI->app_menu->add_sidebar_children_item('axiomchannel', [
+        'slug'     => 'axiomchannel-assistant',
+        'name'     => 'Assistente IA',
+        'href'     => admin_url('axiomchannel/assistant'),
+        'icon'     => 'fa fa-robot',
+        'position' => 4,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('axiomchannel', [
+        'slug'     => 'axiomchannel-appointments',
+        'name'     => 'Agendamentos',
+        'href'     => admin_url('axiomchannel/appointments'),
+        'icon'     => 'fa fa-calendar',
+        'position' => 5,
+    ]);
+
+    $CI->app_menu->add_sidebar_children_item('axiomchannel', [
+        'slug'     => 'axiomchannel-contracts',
+        'name'     => 'Contratos',
+        'href'     => admin_url('axiomchannel/contracts'),
+        'icon'     => 'fa fa-file-text',
+        'position' => 6,
+    ]);
 }
 
 // -------------------------------------------------------
@@ -65,11 +98,11 @@ function axiomchannel_init_menu()
 // -------------------------------------------------------
 function axiomchannel_add_assets()
 {
-    $CI = &get_instance();
-    $CI->app_css->add(
-        'axiomchannel_css',
-        module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css')
-    );
+    static $loaded = false;
+    if ($loaded) return;
+    $loaded = true;
+    $uri = module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css');
+    echo '<link rel="stylesheet" href="' . $uri . '?v=' . time() . '">';
 }
 
 // -------------------------------------------------------

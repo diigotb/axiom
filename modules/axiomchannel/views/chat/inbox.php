@@ -1,14 +1,14 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 init_head();
 ?>
-<link rel="stylesheet" href="<?php echo module_dir_url('axiomchannel', 'assets/css/axiomchannel.css'); ?>">
+<link rel="stylesheet" href="<?= module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css') ?>">
 <div id="wrapper">
 <div class="content ax-app">
 
   <!-- Navegação lateral -->
   <nav class="ax-nav">
     <a href="<?= admin_url('axiomchannel') ?>" class="ax-nav-logo">AX</a>
-    <a href="<?= admin_url('axiomchannel/inbox') ?>" class="ax-nav-item active" title="Inbox">
+    <a href="<?= admin_url('axiomchannel/inbox') ?>" class="ax-nav-item active" title="Todas as Conversas">
       <i class="fa fa-comments"></i>
       <?php if ($unread > 0): ?>
         <span class="ax-nav-badge"><?= $unread ?></span>
@@ -26,7 +26,7 @@ init_head();
   <div class="ax-panel">
     <div class="ax-panel-header">
       <div class="ax-panel-title">
-        Inbox
+        Todas as Conversas
         <span class="ax-panel-count"><?= count($contacts) ?> conversas</span>
       </div>
       <div class="ax-search">
@@ -73,7 +73,18 @@ init_head();
             </div>
             <div class="ax-contact-info">
               <div class="ax-contact-top">
-                <span class="ax-contact-name ax-truncate"><?= htmlspecialchars($c->name ?: $c->phone_number) ?></span>
+                <span class="ax-contact-name ax-truncate">
+                  <?php
+                    $ch_icon = '';
+                    if (!empty($c->channel)) {
+                      if ($c->channel === 'facebook')  $ch_icon = '<i class="fa fa-facebook-square" style="color:#1877F2;font-size:11px;margin-right:3px" title="Facebook Messenger"></i>';
+                      elseif ($c->channel === 'instagram') $ch_icon = '<i class="fa fa-instagram" style="color:#E1306C;font-size:11px;margin-right:3px" title="Instagram Direct"></i>';
+                      else $ch_icon = '<i class="fa fa-whatsapp" style="color:#25D366;font-size:11px;margin-right:3px" title="WhatsApp"></i>';
+                    }
+                    echo $ch_icon;
+                  ?>
+                  <?= htmlspecialchars($c->name ?: $c->phone_number) ?>
+                </span>
                 <span class="ax-contact-time"><?= axch_format_time($c->last_message_at) ?></span>
               </div>
               <div class="ax-contact-preview">

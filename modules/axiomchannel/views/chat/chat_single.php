@@ -1,14 +1,14 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 init_head();
 ?>
-<link rel="stylesheet" href="<?php echo module_dir_url('axiomchannel', 'assets/css/axiomchannel.css'); ?>">
+<link rel="stylesheet" href="<?= module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css') ?>">
 <div id="wrapper">
 <div class="content ax-app">
 
   <!-- Navegação lateral -->
   <nav class="ax-nav">
     <a href="<?= admin_url('axiomchannel') ?>" class="ax-nav-logo">AX</a>
-    <a href="<?= admin_url('axiomchannel/inbox') ?>" class="ax-nav-item active" title="Inbox">
+    <a href="<?= admin_url('axiomchannel/inbox') ?>" class="ax-nav-item active" title="Todas as Conversas">
       <i class="fa fa-comments"></i>
     </a>
     <a href="<?= admin_url('axiomchannel/devices') ?>" class="ax-nav-item" title="Dispositivos">
@@ -22,7 +22,7 @@ init_head();
   <!-- Painel lateral com lista -->
   <div class="ax-panel">
     <div class="ax-panel-header">
-      <div class="ax-panel-title">Inbox</div>
+      <div class="ax-panel-title">Todas as Conversas</div>
       <div class="ax-search">
         <i class="fa fa-search ax-search-icon"></i>
         <input type="text" id="axch-search" placeholder="Buscar...">
@@ -66,6 +66,45 @@ init_head();
         </button>
       </div>
     </div>
+
+    <!-- Barra de Pipeline CRM -->
+    <?php if (!empty($pipelines)): ?>
+    <div class="ax-pipeline-bar" id="ax-pipeline-bar" style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f8f9fa;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;min-height:44px">
+      <?php if ($crm_lead && $pipeline): ?>
+        <span style="font-size:11px;font-weight:600;color:#6b7280;white-space:nowrap;margin-right:4px"><?= htmlspecialchars($pipeline->name) ?></span>
+        <?php foreach ($stages as $stage): ?>
+          <?php
+            $ativo = ((int)$crm_lead->stage_id === (int)$stage->id);
+            $cor   = !empty($stage->color) ? htmlspecialchars($stage->color) : '#2D7A6B';
+            if ($ativo) {
+              $style_btn = "padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;border:2px solid {$cor};background:{$cor};color:#ffffff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);white-space:nowrap;transition:all .2s";
+            } else {
+              $style_btn = "padding:5px 16px;border-radius:20px;font-size:12px;font-weight:600;border:2px solid {$cor};background:transparent;color:{$cor};cursor:pointer;transition:all .2s;white-space:nowrap";
+            }
+          ?>
+          <button
+            data-stage-id="<?= (int)$stage->id ?>"
+            data-color="<?= $cor ?>"
+            data-active="<?= $ativo ? '1' : '0' ?>"
+            onclick="axchMoveStage(<?= (int)$pipeline->id ?>, <?= (int)$stage->id ?>)"
+            onmouseenter="if(this.dataset.active==='0'){this.style.background=this.dataset.color;this.style.color='#fff'}"
+            onmouseleave="if(this.dataset.active==='0'){this.style.background='transparent';this.style.color=this.dataset.color}"
+            style="<?= $style_btn ?>"
+          ><?= htmlspecialchars($stage->name) ?></button>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <span style="font-size:11px;font-weight:600;color:var(--ax-gray-500,#6b7280);white-space:nowrap">Pipeline CRM</span>
+        <select id="ax-pipeline-select" style="font-size:12px;padding:3px 8px;border:1px solid var(--ax-border,#e5e7eb);border-radius:6px;background:#fff">
+          <?php foreach ($pipelines as $p): ?>
+            <option value="<?= (int)$p->id ?>"><?= htmlspecialchars($p->name) ?></option>
+          <?php endforeach; ?>
+        </select>
+        <button onclick="axchAddToPipeline()" style="font-size:12px;padding:5px 14px;border-radius:20px;border:none;background:var(--ax-primary,#2563eb);color:#fff;cursor:pointer;font-weight:600">
+          <i class="fa fa-plus"></i> Adicionar ao pipeline
+        </button>
+      <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <!-- Mensagens -->
     <div class="ax-messages" id="axch-messages">
@@ -134,6 +173,24 @@ init_head();
     </div>
 
   </div>
+
+  <!-- Copiloto IA -->
+  <div class="ax-copilot" id="ax-copilot">
+    <div class="ax-copilot-header">
+      <span class="ax-copilot-title">
+        <i class="fa fa-magic" style="color:var(--ax-teal);margin-right:5px"></i>Copiloto IA
+      </span>
+      <button class="ax-copilot-refresh" id="copilot-refresh-btn" onclick="axchCopilotRefresh()" title="Atualizar análise">
+        <i class="fa fa-refresh" id="copilot-refresh-icon"></i>
+      </button>
+    </div>
+    <div class="ax-copilot-body" id="copilot-body">
+      <div class="ax-copilot-loader">
+        <i class="fa fa-spinner fa-spin"></i> Analisando...
+      </div>
+    </div>
+  </div>
+
 </div>
 </div>
 
@@ -168,12 +225,58 @@ init_head();
 </div>
 
 <script>
-const CSRF_TOKEN = '<?= $this->security->get_csrf_hash() ?>';
-const CSRF_NAME  = '<?= $this->security->get_csrf_token_name() ?>';
-const CONTACT_ID = <?= (int)$contact->id ?>;
-const ADMIN_URL  = '<?= admin_url() ?>';
-let lastMsgId    = <?= !empty($messages) ? (int)end($messages)->id : 0 ?>;
-let isSending    = false;
+const CSRF_TOKEN  = '<?= $this->security->get_csrf_hash() ?>';
+const CSRF_NAME   = '<?= $this->security->get_csrf_token_name() ?>';
+const CONTACT_ID  = <?= (int)$contact->id ?>;
+const ADMIN_URL   = '<?= admin_url() ?>';
+let lastMsgId     = <?= !empty($messages) ? (int)end($messages)->id : 0 ?>;
+let isSending     = false;
+let currentLeadId = <?= ($crm_lead ? (int)$crm_lead->id : 'null') ?>;
+
+function axchMoveStage(pipeline_id, stage_id) {
+  fetch(ADMIN_URL + 'axiomchannel/lead_move_from_chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: new URLSearchParams({ contact_id: CONTACT_ID, pipeline_id, stage_id, [CSRF_NAME]: CSRF_TOKEN })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.success) return;
+    currentLeadId = data.lead_id;
+    document.querySelectorAll('.ax-stage-btn').forEach(btn => {
+      const isActive = parseInt(btn.dataset.stageId) === parseInt(stage_id);
+      const color    = btn.dataset.color;
+      if (isActive) {
+        btn.style.background  = color;
+        btn.style.color       = '#ffffff';
+        btn.style.fontWeight  = '700';
+        btn.style.boxShadow   = '0 2px 8px rgba(0,0,0,.25)';
+        btn.style.borderColor = color;
+        btn.dataset.active    = '1';
+      } else {
+        btn.style.background  = 'transparent';
+        btn.style.color       = color;
+        btn.style.fontWeight  = '600';
+        btn.style.boxShadow   = 'none';
+        btn.style.borderColor = color;
+        btn.dataset.active    = '0';
+      }
+    });
+  })
+  .catch(() => alert('Erro ao mover estágio'));
+}
+
+function axchAddToPipeline() {
+  const pipeline_id = document.getElementById('ax-pipeline-select').value;
+  fetch(ADMIN_URL + 'axiomchannel/lead_move_from_chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: new URLSearchParams({ contact_id: CONTACT_ID, pipeline_id, stage_id: 0, [CSRF_NAME]: CSRF_TOKEN })
+  })
+  .then(r => r.json())
+  .then(data => { if (data.success) window.location.reload(); })
+  .catch(() => alert('Erro ao adicionar ao pipeline'));
+}
 
 function axchSend() {
   if (isSending) return;
@@ -195,6 +298,8 @@ function axchSend() {
       appendMessage({ direction:'outbound', content:msg, created_at:new Date().toISOString().replace('T',' ').slice(0,19), status:'sent', type:'text', sent_by_ai:0 });
       scrollBottom();
       if (data.message_id) lastMsgId = Math.max(lastMsgId, data.message_id);
+      clearTimeout(_copilotRefreshTimer);
+      _copilotRefreshTimer = setTimeout(axchCopilotLoad, 3000);
     } else {
       alert(data.message || 'Erro ao enviar mensagem');
     }
@@ -235,17 +340,18 @@ function axchPoll() {
   fetch(ADMIN_URL + 'axiomchannel/get_messages', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-    body: new URLSearchParams({ contact_id: CONTACT_ID, limit: 100, offset: 0, [CSRF_NAME]: CSRF_TOKEN })
+    body: new URLSearchParams({ contact_id: CONTACT_ID, since_id: lastMsgId, [CSRF_NAME]: CSRF_TOKEN })
   })
   .then(r => r.json())
   .then(data => {
-    if (!data.success) return;
-    const novas = data.messages.filter(m => parseInt(m.id) > lastMsgId);
-    if (novas.length) {
-      novas.forEach(m => { appendMessage(m); lastMsgId = Math.max(lastMsgId, parseInt(m.id)); });
-      scrollBottom();
-    }
-  });
+    if (!data.success || !data.messages.length) return;
+    data.messages.forEach(m => {
+      appendMessage(m);
+      lastMsgId = Math.max(lastMsgId, parseInt(m.id));
+    });
+    scrollBottom();
+  })
+  .catch(function() {});
 }
 
 function axchTransfer() {
@@ -309,8 +415,92 @@ function axchHandleKey(e) {
 
 scrollBottom();
 loadSidebarContacts();
-setInterval(axchPoll, 5000);
+setInterval(axchPoll, 3000);
 setInterval(loadSidebarContacts, 10000);
+
+// ============================================================
+// COPILOTO IA
+// ============================================================
+let _copilotSuggestions = [];
+let _copilotRefreshTimer;
+
+function axchCopilotRefresh() {
+  const icon = document.getElementById('copilot-refresh-icon');
+  icon.classList.add('fa-spin');
+  axchCopilotLoad(function() { icon.classList.remove('fa-spin'); });
+}
+
+function axchCopilotLoad(cb) {
+  const body = document.getElementById('copilot-body');
+  body.innerHTML = '<div class="ax-copilot-loader"><i class="fa fa-spinner fa-spin"></i> Analisando...</div>';
+  fetch(ADMIN_URL + 'axiomchannel/copilot_analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: new URLSearchParams({ contact_id: CONTACT_ID, [CSRF_NAME]: CSRF_TOKEN })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (cb) cb();
+    if (!data.success) {
+      body.innerHTML = '<p style="font-size:11px;color:var(--ax-gray-400);padding:12px;text-align:center">' + esc(data.message || 'Erro na análise') + '</p>';
+      return;
+    }
+    _renderCopilot(data);
+  })
+  .catch(function() {
+    if (cb) cb();
+    body.innerHTML = '<p style="font-size:11px;color:var(--ax-danger);padding:12px;text-align:center">Erro de conexão</p>';
+  });
+}
+
+function _renderCopilot(data) {
+  const body     = document.getElementById('copilot-body');
+  const sEmoji   = { neutro:'😐', interessado:'😊', hesitante:'🤔', pronto:'🎯' };
+  const sLabel   = { neutro:'Neutro', interessado:'Interessado', hesitante:'Hesitante', pronto:'Pronto p/ fechar' };
+  const s        = data.sentiment || 'neutro';
+
+  let html = '<div class="ax-copilot-section">'
+    + '<div class="ax-copilot-label">Sentimento</div>'
+    + '<div><span class="ax-sentiment ax-sentiment-' + s + '">'
+    + (sEmoji[s] || '😐') + ' ' + (sLabel[s] || s)
+    + '</span></div></div>';
+
+  if (data.tags && data.tags.length) {
+    html += '<div class="ax-copilot-section"><div class="ax-copilot-label">Tópicos</div><div>'
+      + data.tags.map(function(t) { return '<span class="ax-tag-pill">' + esc(t) + '</span>'; }).join('')
+      + '</div></div>';
+  }
+
+  if (data.suggestions && data.suggestions.length) {
+    html += '<div class="ax-copilot-section"><div class="ax-copilot-label">Sugestões</div>';
+    data.suggestions.forEach(function(sg, i) {
+      html += '<div class="ax-sugg-card">'
+        + '<div class="ax-sugg-label">' + esc(sg.label) + '</div>'
+        + '<div class="ax-sugg-text">' + esc(sg.text) + '</div>'
+        + '<button class="ax-sugg-btn" onclick="axchUseSuggestion(' + i + ')">'
+        + '<i class="fa fa-arrow-up"></i> Usar</button></div>';
+    });
+    html += '</div>';
+    _copilotSuggestions = data.suggestions;
+  }
+
+  body.innerHTML = html;
+}
+
+function axchUseSuggestion(i) {
+  const sg = _copilotSuggestions[i];
+  if (!sg) return;
+  const input = document.getElementById('axch-input');
+  input.value = sg.text;
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  input.focus();
+}
+
+// Carrega copiloto 1.5s após a página abrir
+setTimeout(axchCopilotLoad, 1500);
+// Atualiza copiloto a cada 30s
+setInterval(axchCopilotLoad, 30000);
 
 let searchTimer;
 document.getElementById('axch-search').addEventListener('input', () => {

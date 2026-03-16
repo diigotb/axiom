@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') or exit('No direct script access allowed');
 init_head();
 ?>
-<link rel="stylesheet" href="<?php echo module_dir_url('axiomchannel', 'assets/css/axiomchannel.css'); ?>">
+<link rel="stylesheet" href="<?= module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css') ?>">
 <div id="wrapper">
 <div class="content ax-app" style="flex-direction:column">
 
@@ -53,6 +53,15 @@ init_head();
             <button class="ax-btn ax-btn-danger ax-btn-sm" onclick="axchDeleteDevice(<?= $d->id ?>)" title="Remover">
               <i class="fa fa-trash"></i>
             </button>
+          </div>
+          <div style="margin-top:8px">
+            <a href="<?= admin_url('axiomchannel/meta_connect') ?>"
+               class="ax-btn ax-btn-sm ax-w-full"
+               style="background:#f0f2ff;color:#5A67D8;border:1px solid #c3c9f8;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px">
+              <i class="fa fa-facebook-square" style="color:#1877F2"></i>
+              <i class="fa fa-instagram" style="color:#E1306C"></i>
+              Conectar Facebook/Instagram
+            </a>
           </div>
         </div>
       <?php endforeach; ?>
