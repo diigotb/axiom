@@ -619,6 +619,43 @@ class Axiomchannel extends AdminController
         }
 
         // ---- Envia resposta de texto ----
+        // ---- Verifica gatilhos de mídia ----
+$triggers = $this->axiomchannel_model->get_active_triggers($assistant->id);
+if (!empty($triggers)) {
+    $lower_msg = mb_strtolower($content);
+    foreach ($triggers as $trigger) {
+        $phrases = json_decode($trigger->trigger_phrases, true) ?? [];
+        $matched = false;
+
+        // Verifica frase exata primeiro
+        foreach ($phrases as $phrase) {
+            if (mb_strpos($lower_msg, mb_strtolower($phrase)) !== false) {
+                $matched = true;
+                break;
+            }
+        }
+
+        // Se não achou exata, usa Gemini para detectar intenção
+        if (!$matched && !empty($phrases)) {
+            $phrases_list = implode('", "', $phrases);
+            $intent_prompt = "Analise se a mensagem do usuário tem a intenção de pedir algo relacionado a estas frases: [\"{$phrases_list}\"]. Mensagem: \"{$content}\". Responda APENAS com 'sim' ou 'nao'.";
+            $intent_result = $gemini->generate_response('Você é um detector de intenção. Responda apenas sim ou nao.', [], $intent_prompt);
+            if ($intent_result['success'] && mb_strtolower(trim($intent_result['text'])) === 'sim') {
+                $matched = true;
+            }
+        }
+
+        if ($matched) {
+            $media_ids = json_decode($trigger->media_ids, true) ?? [];
+            $delay     = (int)($trigger->send_delay ?? 1);
+            foreach ($media_ids as $media_id) {
+                $this->_send_stage_media($evo, $phone, $media_id);
+                if ($delay > 0) sleep($delay);
+            }
+            break; // dispara só o primeiro bloco que combinar
+        }
+    }
+}
         $evo->send_text($phone, $ai_reply);
         $this->axiomchannel_model->save_message([
             'contact_id' => $contact->id,
@@ -956,15 +993,22 @@ As palavras-chave devem ser termos que o cliente usaria para avançar para o pr�
             }
         }
 
-        $data['title']           = 'Assistente IA';
-        $data['devices']         = $devices;
-        $data['device_id']       = (int) $device_id;
-        $data['assistant']       = $assistant;
-        $data['knowledge']       = $knowledge;
-        $data['ast_stages']      = $ast_stages;
-        $data['pipeline_stages'] = $pipeline_stages;
+    $data['title']           = 'Assistente IA';
+    $data['devices']         = $devices;
+    $data['device_id']       = (int) $device_id;
+    $data['assistant']       = $assistant;
+    $data['knowledge']       = $knowledge;
+    $data['ast_stages']      = $ast_stages;
+    $data['pipeline_stages'] = $pipeline_stages;
 
-        $this->load->view('axiomchannel/assistant/index', $data);
+// Busca triggers apenas se o assistente existir
+    $data['media_triggers']  = $assistant 
+        ? $this->axiomchannel_model->get_triggers_by_assistant($assistant->id) 
+        : [];
+
+// Carrega a view apenas UMA vez ao final do processamento
+    $this->load->view('axiomchannel/assistant/index', $data);
+    
     }
 
     public function assistant_save()
@@ -2306,5 +2350,281 @@ Regras:
             echo json_encode($default);
         }
     }
+
+    // ============================================================
+    // ETAPA 7 — Dashboard metrics (AJAX)
+    // ============================================================
+    public function get_dashboard_metrics()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $prefix = db_prefix();
+        $metrics = [
+            'contacts'       => (int) $this->db->count_all_results($prefix . 'axch_contacts'),
+            'open'           => (int) $this->db->get_where($prefix . 'axch_contacts', ['status' => 'open'])->num_rows(),
+            'pending'        => (int) $this->db->get_where($prefix . 'axch_contacts', ['status' => 'pending'])->num_rows(),
+            'messages_today' => (int) $this->db->where('DATE(created_at)', date('Y-m-d'))->count_all_results($prefix . 'axch_messages'),
+            'devices'        => (int) $this->db->count_all_results($prefix . 'axch_devices'),
+            'leads'          => (int) $this->db->count_all_results($prefix . 'axch_pipeline_leads'),
+            'contracts'      => (int) $this->db->where('MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())', null, false)->count_all_results($prefix . 'axch_contracts'),
+            'automations'    => (int) $this->db->get_where($prefix . 'axch_automations', ['is_active' => 1])->num_rows(),
+        ];
+
+        // Chart: messages per day for last 7 days
+        $labels = [];
+        $values = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $count = (int) $this->db->where('DATE(created_at)', $date)->count_all_results($prefix . 'axch_messages');
+            $labels[] = date('d/m', strtotime($date));
+            $values[] = $count;
+        }
+        $metrics['chart_labels'] = $labels;
+        $metrics['chart_values'] = $values;
+
+        echo json_encode($metrics);
+    }
+
+    // ============================================================
+    // ETAPA 7 — Save dashboard preferences (AJAX)
+    // ============================================================
+    public function save_dashboard_preferences()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $staff_id = get_staff_user_id();
+        $body     = json_decode(file_get_contents('php://input'), true);
+        $prefs    = isset($body['preferences']) ? $body['preferences'] : [];
+
+        $row = $this->db->get_where(db_prefix() . 'axch_staff_preferences', ['staff_id' => $staff_id])->row();
+        $data = ['staff_id' => $staff_id, 'preferences' => json_encode($prefs)];
+        if ($row) {
+            $this->db->update(db_prefix() . 'axch_staff_preferences', $data, ['staff_id' => $staff_id]);
+        } else {
+            $this->db->insert(db_prefix() . 'axch_staff_preferences', $data);
+        }
+        echo json_encode(['success' => true]);
+    }
+
+    // ============================================================
+    // ETAPA 7 — Upload avatar (AJAX)
+    // ============================================================
+    public function upload_avatar()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $staff_id = get_staff_user_id();
+
+        $upload_path = FCPATH . 'uploads/staff_profile_images/';
+        if (!is_dir($upload_path)) {
+            mkdir($upload_path, 0755, true);
+        }
+
+        $this->load->library('upload', [
+            'upload_path'   => $upload_path,
+            'allowed_types' => 'gif|jpg|jpeg|png|webp',
+            'max_size'      => 2048,
+            'file_name'     => $staff_id,
+            'overwrite'     => true,
+        ]);
+
+        if (!$this->upload->do_upload('avatar')) {
+            echo json_encode(['success' => false, 'message' => $this->upload->display_errors('', '')]);
+            return;
+        }
+
+        $info = $this->upload->data();
+        $url  = base_url('uploads/staff_profile_images/' . $info['file_name']) . '?v=' . time();
+        echo json_encode(['success' => true, 'url' => $url]);
+    }
+
+    // ============================================================
+    // AJAX: dados para o dashboard /admin
+    // ============================================================
+    public function admin_dashboard_data()
+    {
+        if (!$this->input->is_ajax_request()) {
+            show_404();
+        }
+
+        $db = $this->db;
+        $today = date('Y-m-d');
+        $month_start = date('Y-m-01');
+        $week_ago = date('Y-m-d', strtotime('-6 days'));
+
+        // Conversas hoje
+        $conv_hoje = (int) $db->where('DATE(created_at)', $today)
+            ->count_all_results(db_prefix() . 'axch_messages');
+
+        // Faturamento mês atual (tblinvoices - somente pagas)
+        $fat = $db->select('SUM(total) as total')
+            ->where('status', 2) // 2 = paid
+            ->where('DATE(datepaid) >=', $month_start)
+            ->get('tblinvoices')->row();
+        $fat_atual = $fat ? number_format((float)($fat->total ?? 0), 2, ',', '.') : '0,00';
+
+        // IA: % de mensagens respondidas pela IA hoje
+        $total_msgs_hoje = (int) $db->where('DATE(created_at)', $today)
+            ->where('direction', 'inbound')
+            ->count_all_results(db_prefix() . 'axch_messages');
+        $ia_msgs_hoje = (int) $db->where('DATE(created_at)', $today)
+            ->where('ia_responded', 1)
+            ->count_all_results(db_prefix() . 'axch_messages');
+        $ia_pct = $total_msgs_hoje > 0 ? round(($ia_msgs_hoje / $total_msgs_hoje) * 100) : 0;
+
+        // Leads hoje
+        $leads_hoje = (int) $db->where('DATE(dateadded)', $today)
+            ->count_all_results('tblleads');
+
+        // Agendamentos hoje
+        $ag_hoje = (int) $db->where('DATE(scheduled_at)', $today)
+            ->count_all_results(db_prefix() . 'axch_appointments');
+
+        // Contratos pendentes
+        $contratos_pend = (int) $db->where('status', 'pending')
+            ->count_all_results(db_prefix() . 'axch_contracts');
+
+        // Últimas 6 conversas
+        $ultimas_raw = $db->select('c.phone, c.name, m.body, m.created_at, m.direction, d.name as device_name')
+            ->from(db_prefix() . 'axch_contacts c')
+            ->join(db_prefix() . 'axch_messages m', 'm.contact_id = c.id', 'left')
+            ->join(db_prefix() . 'axch_devices d', 'd.id = c.device_id', 'left')
+            ->where('m.id IN (SELECT MAX(id) FROM ' . db_prefix() . 'axch_messages GROUP BY contact_id)', null, false)
+            ->order_by('m.created_at', 'DESC')
+            ->limit(6)
+            ->get()->result();
+
+        $ultimas = [];
+        foreach ($ultimas_raw as $r) {
+            $ultimas[] = [
+                'name'    => $r->name ?: $r->phone,
+                'body'    => mb_substr($r->body ?? '', 0, 60),
+                'time'    => $r->created_at ? date('d/m H:i', strtotime($r->created_at)) : '',
+                'channel' => $r->device_name ?? 'WhatsApp',
+            ];
+        }
+
+        // Chart: 7 dias — mensagens WhatsApp vs Meta
+        $chart_labels = [];
+        $chart_wa = [];
+        $chart_meta = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $d = date('Y-m-d', strtotime("-{$i} days"));
+            $label = date('d/m', strtotime($d));
+            $chart_labels[] = $label;
+
+            $wa = (int) $db->where('DATE(created_at)', $d)
+                ->where('channel', 'whatsapp')
+                ->count_all_results(db_prefix() . 'axch_messages');
+            $meta = (int) $db->where('DATE(created_at)', $d)
+                ->where_in('channel', ['instagram', 'facebook'])
+                ->count_all_results(db_prefix() . 'axch_messages');
+
+            $chart_wa[]   = $wa;
+            $chart_meta[] = $meta;
+        }
+
+        echo json_encode([
+            'conv_hoje'      => $conv_hoje,
+            'fat_atual'      => 'R$ ' . $fat_atual,
+            'ia_pct'         => $ia_pct . '%',
+            'leads_hoje'     => $leads_hoje,
+            'ag_hoje'        => $ag_hoje,
+            'contratos_pend' => $contratos_pend,
+            'ultimas'        => $ultimas,
+            'chart_labels'   => $chart_labels,
+            'chart_wa'       => $chart_wa,
+            'chart_meta'     => $chart_meta,
+        ]);
+    }
+
+    // ============================================================
+    // MEDIA TRIGGERS — Blocos de gatilho de mídia
+    // ============================================================
+
+    public function trigger_save()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $id              = (int)$this->input->post('id');
+        $assistant_id    = (int)$this->input->post('assistant_id');
+        $trigger_name    = $this->input->post('trigger_name');
+        $trigger_phrases = $this->input->post('trigger_phrases');
+        $media_ids       = $this->input->post('media_ids');
+        $send_delay      = (int)$this->input->post('send_delay');
+
+        if (!$assistant_id || !$trigger_name || !$trigger_phrases || !$media_ids) {
+            echo json_encode(['success' => false, 'message' => 'Dados incompletos']);
+            return;
+        }
+
+        $phrases_arr = json_decode($trigger_phrases, true);
+        $media_arr   = json_decode($media_ids, true);
+        if (!is_array($phrases_arr) || !is_array($media_arr)) {
+            echo json_encode(['success' => false, 'message' => 'Formato inválido']);
+            return;
+        }
+
+        $data = [
+            'id'              => $id,
+            'assistant_id'    => $assistant_id,
+            'trigger_name'    => $trigger_name,
+            'trigger_phrases' => json_encode($phrases_arr),
+            'media_ids'       => json_encode($media_arr),
+            'send_delay'      => $send_delay ?: 1,
+            'is_active'       => 1,
+        ];
+
+        $saved_id = $this->axiomchannel_model->save_trigger($data);
+        echo json_encode(['success' => true, 'id' => $saved_id]);
+    }
+
+    public function trigger_get($id)
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $trigger = $this->axiomchannel_model->get_trigger((int)$id);
+        if (!$trigger) {
+            echo json_encode(['success' => false, 'message' => 'Bloco não encontrado']);
+            return;
+        }
+
+        echo json_encode([
+            'success' => true,
+            'block'   => [
+                'id'              => (int)$trigger->id,
+                'trigger_name'    => $trigger->trigger_name,
+                'trigger_phrases' => json_decode($trigger->trigger_phrases, true),
+                'media_ids'       => json_decode($trigger->media_ids, true),
+                'send_delay'      => (int)$trigger->send_delay,
+            ]
+        ]);
+    }
+
+    public function trigger_delete()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+
+        $id = (int)$this->input->post('id');
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'ID inválido']);
+            return;
+        }
+
+        $deleted = $this->axiomchannel_model->delete_trigger($id);
+        echo json_encode(['success' => $deleted]);
+    }
+
+    public function trigger_list($assistant_id)
+{
+    if (!$this->input->is_ajax_request()) show_404();
+
+    $triggers = $this->axiomchannel_model->get_triggers_by_assistant((int)$assistant_id);
+
+    foreach ($triggers as &$t) {
+        $t->trigger_phrases = json_decode($t->trigger_phrases, true);
+        $t->media_ids       = json_decode($t->media_ids, true);
+    }
+
+    echo json_encode(['success' => true, 'data' => $triggers]);
+}
 
 } // ← FECHA A CLASSE.

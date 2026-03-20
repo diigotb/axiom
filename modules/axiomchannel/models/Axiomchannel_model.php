@@ -189,7 +189,6 @@ class Axiomchannel_model extends CI_Model
 
     public function save_message($data)
     {
-        // Evitar duplicatas por external_id
         if (!empty($data['external_id'])) {
             $exists = $this->db->get_where(db_prefix() . 'axch_messages', [
                 'external_id' => $data['external_id'],
@@ -215,7 +214,6 @@ class Axiomchannel_model extends CI_Model
 
         $message_id = $this->db->insert_id();
 
-        // Atualizar última mensagem no contato
         $this->db->update(db_prefix() . 'axch_contacts', [
             'last_message'    => substr($data['content'] ?? '[mídia]', 0, 200),
             'last_message_at' => $data['created_at'] ?? date('Y-m-d H:i:s'),
@@ -353,7 +351,6 @@ class Axiomchannel_model extends CI_Model
 
     public function reorder_stages($stages)
     {
-        // $stages = array de ['id' => X, 'position' => Y]
         foreach ($stages as $s) {
             $this->db->update(
                 db_prefix() . 'axch_pipeline_stages',
@@ -426,7 +423,6 @@ class Axiomchannel_model extends CI_Model
         $lead = $this->get_crm_lead($lead_id);
         if (!$lead) return false;
 
-        // Salva histórico
         $this->db->insert(db_prefix() . 'axch_pipeline_history', [
             'lead_id'    => $lead_id,
             'from_stage' => $lead->stage_id,
@@ -437,7 +433,6 @@ class Axiomchannel_model extends CI_Model
             'created_at' => date('Y-m-d H:i:s'),
         ]);
 
-        // Move o lead
         $this->db->update(db_prefix() . 'axch_crm_leads', [
             'stage_id'   => $stage_id,
             'updated_at' => date('Y-m-d H:i:s'),
@@ -488,7 +483,6 @@ class Axiomchannel_model extends CI_Model
 
     public function save_wizard_pipeline($pipeline_id, $stages)
     {
-        // Salva todos os estágios gerados pela IA de uma vez
         foreach ($stages as $i => $stage) {
             $this->create_stage([
                 'pipeline_id' => $pipeline_id,
@@ -616,7 +610,6 @@ class Axiomchannel_model extends CI_Model
 
     public function save_assistant_stage($data)
     {
-        // Garante que media_id NULL quando vazio
         if (isset($data['media_id']) && $data['media_id'] === '') {
             $data['media_id'] = null;
         }
@@ -747,7 +740,6 @@ class Axiomchannel_model extends CI_Model
 
     public function get_available_slots($device_id, $date)
     {
-        // Busca assistant config para horários
         $assistant = $this->db
             ->where('device_id', (int) $device_id)
             ->where('is_active', 1)
@@ -759,7 +751,6 @@ class Axiomchannel_model extends CI_Model
         $duration   = (int) ($assistant->appointment_duration ?? 60);
         $interval   = (int) ($assistant->appointment_interval ?? 30);
 
-        // Agendamentos já existentes nessa data
         $booked = $this->db
             ->where('device_id', (int) $device_id)
             ->where('DATE(start_datetime)', $date)
@@ -775,7 +766,7 @@ class Axiomchannel_model extends CI_Model
             ];
         }
 
-        $slots     = [];
+        $slots      = [];
         $slot_start = strtotime($date . ' ' . $start_time);
         $day_end    = strtotime($date . ' ' . $end_time);
 
@@ -944,4 +935,53 @@ class Axiomchannel_model extends CI_Model
             ]
         )->row();
     }
-}
+
+    // ============================================================
+    // MEDIA TRIGGERS (Blocos de gatilho)
+    // ============================================================
+
+    public function get_triggers_by_assistant($assistant_id)
+    {
+        return $this->db
+            ->where('assistant_id', (int)$assistant_id)
+            ->order_by('position', 'ASC')
+            ->get(db_prefix() . 'axch_media_triggers')
+            ->result();
+    }
+
+    public function get_trigger($id)
+    {
+        return $this->db->get_where(
+            db_prefix() . 'axch_media_triggers',
+            ['id' => (int)$id]
+        )->row();
+    }
+
+    public function save_trigger($data)
+    {
+        $id = (int)($data['id'] ?? 0);
+        unset($data['id']);
+        if ($id > 0) {
+            $this->db->update(db_prefix() . 'axch_media_triggers', $data, ['id' => $id]);
+            return $id;
+        }
+        $this->db->insert(db_prefix() . 'axch_media_triggers', $data);
+        return $this->db->insert_id();
+    }
+
+    public function delete_trigger($id)
+    {
+        $this->db->delete(db_prefix() . 'axch_media_triggers', ['id' => (int)$id]);
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function get_active_triggers($assistant_id)
+    {
+        return $this->db
+            ->where('assistant_id', (int)$assistant_id)
+            ->where('is_active', 1)
+            ->get(db_prefix() . 'axch_media_triggers')
+            ->result();
+    }
+
+} // ← FECHA A CLASSE

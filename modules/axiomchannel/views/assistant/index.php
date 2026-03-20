@@ -318,8 +318,8 @@ init_head();
           <div id="knowledge-list">
             <?php if (empty($knowledge)): ?>
               <div id="knowledge-empty" style="text-align:center;padding:40px;color:#94a3b8;background:#f8fafc;border-radius:12px">
-                <i class="fa fa-book" style="font-size:32px;margin-bottom:10px;display:block"></i>
-                <p style="font-size:13px">Nenhum item cadastrado ainda. Adicione o que a IA deve saber.</p>
+                <i style="font-size:40px;margin-bottom:10px;display:block">🧠</i>
+                <p style="font-size:13px;color:#2D7A6B">Nenhum item cadastrado ainda. Adicione o que a IA deve saber.</p>
               </div>
             <?php else: ?>
               <?php
@@ -465,8 +465,8 @@ init_head();
           <div id="stage-list">
             <?php if (empty($ast_stages)): ?>
               <div id="stage-empty" style="text-align:center;padding:40px;color:#94a3b8;background:#f8fafc;border-radius:12px">
-                <i class="fa fa-sitemap" style="font-size:32px;margin-bottom:10px;display:block"></i>
-                <p style="font-size:13px">Nenhuma etapa definida. Adicione o fluxo de qualificação.</p>
+                <i style="font-size:40px;margin-bottom:10px;display:block">🔀</i>
+                <p style="font-size:13px;color:#2D7A6B">Nenhuma etapa definida. Adicione o fluxo de qualificação.</p>
               </div>
             <?php else: ?>
               <?php
@@ -526,57 +526,208 @@ init_head();
             <i class="fa fa-photo" style="font-size:32px;margin-bottom:10px;display:block"></i>
             <p style="font-size:13px">Salve as configurações do assistente primeiro.</p>
           </div>
-        <?php else: ?>
+       <?php else: ?>
 
-          <!-- Instrução de uso -->
-          <div style="background:#f0fdf9;border:1px solid #a7f3d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#1e293b">
-            <i class="fa fa-info-circle" style="color:#2D7A6B"></i>
-            <strong>Repositório de arquivos.</strong>
-            Faça upload dos arquivos que o assistente pode enviar. Para vinculá-los ao fluxo de atendimento, edite uma etapa na aba <strong>Fluxo de qualificação</strong> e selecione o arquivo no campo "Mídia desta etapa".
+<!-- ── Cabeçalho da aba ── -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <p style="font-size:13px;color:#64748b;margin:0">
+    Faça upload de arquivos e organize-os em <strong>blocos com gatilhos</strong>.<br>
+    <span style="font-size:11px">Quando o cliente enviar uma frase do gatilho, a IA dispara automaticamente as mídias do bloco.</span>
+  </p>
+  <button onclick="openTriggerForm()"
+    style="padding:7px 14px;background:#2D7A6B;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;margin-left:12px">
+    <i class="fa fa-plus"></i> Novo bloco
+  </button>
+</div>
+
+<!-- ── FORM: Novo / Editar bloco de gatilho ── -->
+<div id="trigger-form" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:18px;margin-bottom:20px">
+  <input type="hidden" id="tf-id" value="0">
+
+  <div style="font-size:13px;font-weight:700;color:#2D7A6B;margin-bottom:14px">
+    <i>⚡</i> Configurar bloco de gatilho
+  </div>
+
+  <!-- Nome do bloco -->
+  <div style="margin-bottom:12px">
+    <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Nome do bloco</label>
+    <input type="text" id="tf-name" class="ax-input" placeholder="Ex: Cardápio, Tabela de preços, Vídeo de apresentação...">
+  </div>
+
+  <!-- Frases gatilho -->
+  <div style="margin-bottom:12px">
+    <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">
+      Frases / intenções gatilho
+    </label>
+    <div id="tf-phrases-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:32px;padding:6px;background:#fff;border:1px solid #2D7A6B;border-radius:8px">
+      <!-- chips inseridos via JS -->
+    </div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="tf-phrase-input" class="ax-input" placeholder="Digite uma frase e pressione Enter ou clique em +"
+        style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addPhrase()}">
+      <button type="button" onclick="addPhrase()"
+        style="padding:7px 14px;background:#2D7A6B;color:white;border:1px solid #ffffff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">
+        + Adicionar
+      </button>
+    </div>
+    <p style="font-size:11px;color:#94a3b8;margin:5px 0 0">
+      <i class="fa fa-info-circle"></i>
+      A IA entende a <strong>intenção</strong> — não precisa ser frase exata. Ex: "quero ver o cardápio", "manda o menu", "tem tabela de preços?"
+    </p>
+  </div>
+
+  <!-- Seleção de mídias -->
+  <div style="margin-bottom:12px">
+    <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">
+      Mídias do bloco <span style="font-weight:400;text-transform:none;font-size:11px;color:#94a3b8">(serão enviadas em sequência)</span>
+    </label>
+
+    <?php
+      $all_media = $this->axiomchannel_model->get_media_by_assistant($assistant->id);
+    ?>
+
+    <?php if (empty($all_media)): ?>
+      <div style="padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;color:#94a3b8;text-align:center">
+        <i class="fa fa-photo"></i> Faça upload de mídias abaixo antes de criar um bloco.
+      </div>
+    <?php else: ?>
+      <div id="tf-media-checkboxes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:200px;overflow-y:auto;padding:4px">
+        <?php foreach ($all_media as $m):
+          $dispName = $m->media_label ?: $m->original_name;
+          $icon = ['image'=>'fa-file-image-o','video'=>'fa-file-video-o','audio'=>'fa-file-audio-o','pdf'=>'fa-file-pdf-o'][$m->file_type] ?? 'fa-file-o';
+        ?>
+        <label id="ml-<?= $m->id ?>" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;cursor:pointer;font-size:12px;color:#1e293b !importante;transition:.15s"
+          onmouseenter="this.style.borderColor='#2D7A6B'" onmouseleave="updateMediaLabelStyle(<?= $m->id ?>)">
+          <input type="checkbox" class="tf-media-cb" value="<?= $m->id ?>" onchange="updateMediaLabelStyle(<?= $m->id ?>)">
+          <i class="fa <?= $icon ?>" style="color:#94a3b8;font-size:14px"></i>
+          <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="<?= htmlspecialchars($dispName) ?>"><?= htmlspecialchars(substr($dispName,0,22)) ?></span>
+        </label>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+
+  <!-- Delay entre mídias -->
+  <div style="margin-bottom:14px">
+    <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Delay entre mídias (segundos)</label>
+    <input type="number" id="tf-delay" class="ax-input" value="1" min="0" max="10" style="width:120px">
+    <span style="font-size:11px;color:#94a3b8;margin-left:8px">Intervalo entre o envio de cada arquivo</span>
+  </div>
+
+  <div style="display:flex;gap:8px">
+    <button type="button" id="btn-save-trigger"
+  style="padding:8px 18px;background:#2D7A6B;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
+  <i class="fa fa-save"></i> Salvar bloco
+</button>
+    <button type="button" onclick="closeTriggerForm()"
+      style="padding:8px 14px;background:transparent;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;cursor:pointer;color:#64748b">
+      Cancelar
+    </button>
+  </div>
+</div>
+
+<!-- ── LISTA de blocos existentes ── -->
+<div id="trigger-blocks-list" style="margin-bottom:28px">
+  <?php if (!empty($media_triggers)): ?>
+    <?php foreach ($media_triggers as $tb):
+      $phrases = json_decode($tb->trigger_phrases, true) ?? [];
+      $mids    = json_decode($tb->media_ids, true) ?? [];
+    ?>
+    <div class="trigger-block-card" id="tb-<?= $tb->id ?>"
+      style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:15px">⚡</span>
+            <span style="font-size:14px;font-weight:700;color:#1e293b"><?= htmlspecialchars($tb->trigger_name) ?></span>
+            <span style="font-size:10px;background:#f0fdf9;color:#2D7A6B;border:1px solid #a7f3d0;border-radius:4px;padding:2px 7px;font-weight:600">
+              <?= count($mids) ?> mídia<?= count($mids) != 1 ? 's' : '' ?>
+            </span>
           </div>
-
-          <!-- Painel de upload simplificado -->
-          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:20px">
-
-            <!-- Drop zone -->
-            <div id="media-dropzone"
-              style="border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;cursor:pointer;background:#fff;margin-bottom:14px;transition:.2s"
-              onclick="document.getElementById('media-file-input').click()"
-              ondragover="event.preventDefault();this.style.borderColor='#2D7A6B';this.style.background='#f0fdf9'"
-              ondragleave="this.style.borderColor='#cbd5e1';this.style.background='#fff'"
-              ondrop="handleMediaDrop(event)">
-              <i class="fa fa-cloud-upload" style="font-size:28px;color:#94a3b8;display:block;margin-bottom:6px"></i>
-              <p style="font-size:13px;color:#64748b;margin:0">Arraste arquivos aqui ou <strong style="color:#2D7A6B">clique para selecionar</strong></p>
-              <p style="font-size:11px;color:#94a3b8;margin:4px 0 0">Imagens, vídeos, áudios, PDF — máx. 20 MB</p>
-              <input type="file" id="media-file-input" style="display:none"
-                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
-                onchange="uploadMediaFile(this.files[0])">
-            </div>
-
-            <!-- Apenas nome/descrição -->
-            <div>
-              <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Nome / Descrição do arquivo</label>
-              <input type="text" id="media-label" class="ax-input" placeholder="Ex: Resultado botox antes e depois, tabela de preços, contrato modelo...">
-              <p style="font-size:11px;color:#94a3b8;margin:4px 0 0">Este nome aparecerá no select das etapas para facilitar a identificação.</p>
-            </div>
-
+          <!-- chips de frases -->
+          <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+            <?php foreach ($phrases as $ph): ?>
+            <span style="font-size:11px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;padding:2px 10px">
+              <?= htmlspecialchars($ph) ?>
+            </span>
+            <?php endforeach; ?>
           </div>
-
-          <!-- Barra de progresso (oculta) -->
-          <div id="media-progress-bar" style="display:none;background:#e2e8f0;border-radius:8px;height:6px;margin-bottom:14px">
-            <div id="media-progress-fill" style="background:#2D7A6B;height:100%;border-radius:8px;width:0%;transition:width .3s"></div>
+          <!-- mídias vinculadas -->
+          <div style="font-size:11px;color:#64748b">
+            <i class="fa fa-photo" style="color:#2D7A6B"></i>
+            <?php
+              $media_map = [];
+              foreach ($all_media as $m) $media_map[$m->id] = $m->media_label ?: $m->original_name;
+              $names = array_filter(array_map(fn($id) => $media_map[$id] ?? null, $mids));
+              echo implode(' · ', array_map('htmlspecialchars', $names));
+            ?>
           </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="editTriggerBlock(<?= $tb->id ?>)"
+            style="border:1px solid #e2e8f0;background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;color:#64748b;font-size:11px">
+            <i class="fa fa-pencil"></i>
+          </button>
+          <button onclick="deleteTriggerBlock(<?= $tb->id ?>)"
+            style="border:1px solid #fecaca;background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;color:#ef4444;font-size:11px">
+            <i class="fa fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <?php endforeach; ?>
+  <?php else: ?>
+    <div id="trigger-empty" style="text-align:center;padding:32px;color:#94a3b8;background:#f8fafc;border-radius:12px">
+      <span style="font-size:40px;display:block;margin-bottom:10px">⚡</span>
+      <p style="font-size:13px;color:#2D7A6B">Nenhum bloco de gatilho ainda.<br>Crie um bloco para a IA enviar mídias automaticamente.</p>
+    </div>
+  <?php endif; ?>
+  </div>
+</div>
 
-          <!-- Grid de mídia -->
-          <div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px">
-            <!-- preenchido via loadMediaGrid() no JS -->
-            <div id="media-empty-state" style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8">
-              <i class="fa fa-photo" style="font-size:32px;margin-bottom:10px;display:block"></i>
-              <p style="font-size:13px">Nenhuma mídia ainda.</p>
-            </div>
-          </div>
+<!-- ── Divisor ── -->
+<div style="border-top:1px solid #e2e8f0;margin:24px 0 16px">
+  <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-top:16px;margin-bottom:14px">
+    <i class="fa fa-folder-open" style="color:#2D7A6B"></i> Repositório de arquivos
+  </div>
+</div>
 
-        <?php endif; ?>
+<!-- ── Upload ── -->
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:20px">
+  <div id="media-dropzone"
+    style="border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;cursor:pointer;background:#fff;margin-bottom:14px;transition:.2s"
+    onclick="document.getElementById('media-file-input').click()"
+    ondragover="event.preventDefault();this.style.borderColor='#2D7A6B';this.style.background='#f0fdf9'"
+    ondragleave="this.style.borderColor='#cbd5e1';this.style.background='#fff'"
+    ondrop="handleMediaDrop(event)">
+    <i class="fa fa-cloud-upload" style="font-size:28px;color:#94a3b8;display:block;margin-bottom:6px"></i>
+    <p style="font-size:13px;color:#64748b;margin:0">Arraste arquivos aqui ou <strong style="color:#2D7A6B">clique para selecionar</strong></p>
+    <p style="font-size:11px;color:#94a3b8;margin:4px 0 0">Imagens, vídeos, áudios, PDF — máx. 20 MB</p>
+    <input type="file" id="media-file-input" style="display:none"
+      accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx"
+      onchange="uploadMediaFile(this.files[0])">
+  </div>
+  <div>
+    <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Nome / Descrição do arquivo</label>
+    <input type="text" id="media-label" class="ax-input" placeholder="Ex: Cardápio, tabela de preços, vídeo de apresentação...">
+    <p style="font-size:11px;color:#94a3b8;margin:4px 0 0">Este nome aparece nos blocos de gatilho para facilitar a identificação.</p>
+  </div>
+</div>
+
+<!-- Barra de progresso -->
+<div id="media-progress-bar" style="display:none;background:#e2e8f0;border-radius:8px;height:6px;margin-bottom:14px">
+  <div id="media-progress-fill" style="background:#2D7A6B;height:100%;border-radius:8px;width:0%;transition:width .3s"></div>
+</div>
+
+<!-- Grid de mídias -->
+<div id="media-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px">
+  <div id="media-empty-state" style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8">
+    <i class="fa fa-photo" style="font-size:32px;margin-bottom:10px;display:block"></i>
+    <p style="font-size:13px">Nenhuma mídia ainda.</p>
+  </div>
+</div>
+
+<?php endif; ?>
       </div>
 
     </div><!-- coluna direita -->
@@ -820,7 +971,152 @@ function deleteStageItem(id) {
     }
   });
 }
+// ════════════════════════════════════════
+// BLOCOS DE GATILHO DE MÍDIA
+// ════════════════════════════════════════
 
+document.addEventListener('DOMContentLoaded', function() {
+  const btn = document.getElementById('btn-save-trigger');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      saveTriggerBlock();
+    });
+  }
+});
+
+let tfPhrases = []; // frases do bloco em edição
+let tfBlockData = {}; // dados para edição
+
+function openTriggerForm() {
+  tfPhrases = [];
+  document.getElementById('tf-id').value        = 0;
+  document.getElementById('tf-name').value      = '';
+  document.getElementById('tf-phrase-input').value = '';
+  document.getElementById('tf-delay').value     = 1;
+  document.getElementById('tf-phrases-list').innerHTML = '';
+  document.querySelectorAll('.tf-media-cb').forEach(cb => {
+    cb.checked = false;
+    updateMediaLabelStyle(cb.value);
+  });
+  document.getElementById('trigger-form').style.display = 'block';
+  document.getElementById('tf-name').focus();
+}
+
+function closeTriggerForm() {
+  document.getElementById('trigger-form').style.display = 'none';
+}
+
+function addPhrase() {
+  const input = document.getElementById('tf-phrase-input');
+  const val   = input.value.trim();
+  if (!val || tfPhrases.includes(val)) { input.value = ''; return; }
+  tfPhrases.push(val);
+  renderPhraseChips();
+  input.value = '';
+  input.focus();
+}
+
+function removePhrase(idx) {
+  tfPhrases.splice(idx, 1);
+  renderPhraseChips();
+}
+
+function renderPhraseChips() {
+  const list = document.getElementById('tf-phrases-list');
+  list.innerHTML = tfPhrases.map((p, i) =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;background:#f0fdf9;color:#2D7A6B;border:1px solid #a7f3d0;border-radius:20px;padding:3px 10px;font-size:12px">
+      ${p}
+      <button onclick="removePhrase(${i})" style="background:none;border:none;cursor:pointer;color:#1d4ed8;font-size:12px;line-height:1;padding:0">×</button>
+    </span>`
+  ).join('');
+}
+
+function updateMediaLabelStyle(id) {
+  const lbl = document.getElementById('ml-' + id);
+  const cb  = lbl ? lbl.querySelector('input[type=checkbox]') : null;
+  if (!lbl || !cb) return;
+  lbl.style.borderColor  = cb.checked ? '#2D7A6B' : '#e2e8f0';
+  lbl.style.background   = cb.checked ? '#f0fdf9' : '#fff';
+}
+
+function saveTriggerBlock() {
+  const aid  = document.getElementById('f-assistant-id').value || ASSISTANT_ID;
+  const name = document.getElementById('tf-name').value.trim();
+  const id   = document.getElementById('tf-id').value;
+
+  if (!name)            { alert('Dê um nome ao bloco'); return; }
+  if (!tfPhrases.length){ alert('Adicione pelo menos uma frase gatilho'); return; }
+
+  const mediaIds = [...document.querySelectorAll('.tf-media-cb:checked')].map(cb => cb.value);
+  if (!mediaIds.length) { alert('Selecione pelo menos uma mídia'); return; }
+
+  fetch(ADMIN_URL + 'axiomchannel/trigger_save', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+    body: new URLSearchParams({
+      id,
+      assistant_id:    aid,
+      trigger_name:    name,
+      trigger_phrases: JSON.stringify(tfPhrases),
+      media_ids:       JSON.stringify(mediaIds),
+      send_delay:      document.getElementById('tf-delay').value,
+      [CSRF_NAME]:     CSRF_TOKEN
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+  if (data.success) {
+    closeTriggerForm();
+    loadTriggerBlocks();
+  } else {
+    alert(data.message || 'Erro ao salvar bloco');
+}
+  });
+}
+
+function editTriggerBlock(id) {
+  fetch(ADMIN_URL + 'axiomchannel/trigger_get/' + id, {
+    headers: {'X-Requested-With':'XMLHttpRequest'}
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.success) { alert('Erro ao carregar bloco'); return; }
+    const b = data.block;
+    tfPhrases = b.trigger_phrases || [];
+
+    document.getElementById('tf-id').value    = b.id;
+    document.getElementById('tf-name').value  = b.trigger_name;
+    document.getElementById('tf-delay').value = b.send_delay;
+    renderPhraseChips();
+
+    // marca checkboxes
+    document.querySelectorAll('.tf-media-cb').forEach(cb => {
+      cb.checked = b.media_ids.includes(String(cb.value));
+      updateMediaLabelStyle(cb.value);
+    });
+
+    document.getElementById('trigger-form').style.display = 'block';
+    document.getElementById('tf-name').focus();
+  });
+}
+
+function deleteTriggerBlock(id) {
+  if (!confirm('Remover este bloco de gatilho?')) return;
+  fetch(ADMIN_URL + 'axiomchannel/trigger_delete', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+    body: new URLSearchParams({ id, [CSRF_NAME]: CSRF_TOKEN })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.success) {
+      const el = document.getElementById('tb-' + id);
+      if (el) el.remove();
+    }
+  });
+}
 function moveStageItem(id, direction) {
   const el    = document.getElementById('si-' + id);
   const list  = document.getElementById('stage-list');
@@ -923,7 +1219,7 @@ function loadMediaGrid() {
     if (!res.data.length) {
       grid.innerHTML = '<div id="media-empty-state" style="grid-column:1/-1;text-align:center;padding:40px;color:#94a3b8">' +
         '<i class="fa fa-photo" style="font-size:32px;margin-bottom:10px;display:block"></i>' +
-        '<p style="font-size:13px">Nenhuma mídia ainda. Faça upload acima.</p></div>';
+        '<p style="font-size:13px">Nenhuma mídia ainda.</p></div>';
       return;
     }
 
@@ -941,8 +1237,8 @@ function loadMediaGrid() {
         : '<div style="height:80px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;font-size:28px;color:#94a3b8"><i class="fa ' + icon + '"></i></div>'
       ) +
       '<div style="padding:8px 8px 6px">' +
-        '<p style="font-size:11px;color:#1e293b;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + dispName + '">' + dispName + '</p>' +
-        '<p style="font-size:10px;color:#94a3b8;margin:2px 0 0">' + m.file_type + '</p>' +
+        '<p style="font-size:11px;color:#1e293b !important;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + dispName + '">' + dispName + '</p>' +
+        '<p style="font-size:10px;color:#94a3b8 !important;margin:2px 0 0">' + m.file_type + '</p>' +
       '</div>' +
       '<button onclick="deleteMedia(' + m.id + ')" title="Remover" ' +
         'style="position:absolute;top:4px;right:4px;background:rgba(239,68,68,.85);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:10px;cursor:pointer;line-height:22px;text-align:center;padding:0">' +
@@ -966,6 +1262,47 @@ function deleteMedia(id) {
       const el = document.getElementById('media-' + id);
       if (el) el.remove();
     }
+  });
+}
+
+if (window.location.hash === '#media') {
+  showTab('media');
+  history.replaceState(null, '', window.location.pathname + '?device_id=' + DEVICE_ID);
+}
+
+function loadTriggerBlocks() {
+  const aid = ASSISTANT_ID || document.getElementById('f-assistant-id').value;
+  fetch(ADMIN_URL + 'axiomchannel/trigger_list/' + aid, {
+    headers: {'X-Requested-With': 'XMLHttpRequest'}
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.success) return;
+    const list = document.getElementById('trigger-blocks-list');
+    if (!res.data.length) {
+      list.innerHTML = '<div id="trigger-empty" style="text-align:center;padding:32px;color:#94a3b8;background:#f8fafc;border-radius:12px"><span style="font-size:40px;display:block;margin-bottom:10px">⚡</span><p style="font-size:13px;color:#2D7A6B">Nenhum bloco de gatilho ainda.</p></div>';
+      return;
+    }
+    list.innerHTML = res.data.map(tb => `
+      <div class="trigger-block-card" id="tb-${tb.id}" style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:10px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+              <span style="font-size:15px">⚡</span>
+              <span style="font-size:14px;font-weight:700;color:#1e293b">${tb.trigger_name}</span>
+              <span style="font-size:10px;background:#f0fdf9;color:#2D7A6B;border:1px solid #a7f3d0;border-radius:4px;padding:2px 7px;font-weight:600">${tb.media_ids.length} mídia${tb.media_ids.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+              ${tb.trigger_phrases.map(p => `<span style="font-size:11px;background:#f0fdf9;color:#2D7A6B;border:1px solid #a7f3d0;border-radius:20px;padding:2px 10px">${p}</span>`).join('')}
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button type="button" onclick="editTriggerBlock(${tb.id})" style="border:1px solid #e2e8f0;background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;color:#64748b;font-size:11px"><i class="fa fa-pencil"></i></button>
+            <button type="button" onclick="deleteTriggerBlock(${tb.id})" style="border:1px solid #fecaca;background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;color:#ef4444;font-size:11px"><i class="fa fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    `).join('');
   });
 }
 </script>

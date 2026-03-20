@@ -64,7 +64,12 @@ init_head();
         <div class="kanban-col-header" id="hdr-<?= $stage->id ?>" style="background:<?= $stage->color ?>22;border:1px solid <?= $stage->color ?>44">
           <div style="display:flex;align-items:center;gap:8px">
             <div class="stage-dot" style="width:10px;height:10px;border-radius:50%;background:<?= $stage->color ?>"></div>
-            <span class="stage-name" style="font-size:12px;font-weight:600;color:var(--ax-gray-800)"><?= htmlspecialchars($stage->name) ?></span>
+            <?php
+              $hex = ltrim($stage->color, '#');
+              $r = hexdec(substr($hex,0,2)); $g = hexdec(substr($hex,2,2)); $b = hexdec(substr($hex,4,2));
+              $textColor = '#FFFFFF';
+            ?>
+            <span class="stage-name" style="font-size:12px;font-weight:600;color:<?= $textColor ?>"><?= htmlspecialchars($stage->name) ?></span>
           </div>
           <div style="display:flex;align-items:center;gap:6px">
             <span class="col-count" style="background:<?= $stage->color ?>"><?= count($leads) ?></span>
@@ -272,7 +277,9 @@ function saveStage() {
       hdr.style.background   = editStageColor + '22';
       hdr.style.borderColor  = editStageColor + '44';
       hdr.querySelector('.stage-dot').style.background  = editStageColor;
-      hdr.querySelector('.stage-name').textContent      = name;
+      hdr.querySelector('.stage-name').textContent = name;
+// Adiciona esta linha:
+      hdr.querySelector('.stage-name').style.color = getContrastColor(editStageColor + 'FF');
       hdr.querySelector('.col-count').style.background  = editStageColor;
     }
   })
@@ -411,6 +418,47 @@ function updateLead() {
       if (card) card.textContent = document.getElementById('edit-name').value;
     }
   });
+}
+
+function getContrastColor(hex) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return (0.299*r + 0.587*g + 0.114*b)/255 > 0.5 ? '#1A202C' : '#FFFFFF';
+}
+
+function saveStage() {
+  const id   = document.getElementById('edit-stage-id').value;
+  const name = document.getElementById('edit-stage-name').value.trim();
+  if (!name) { alert('Preencha o nome'); return; }
+
+  fetch(ADMIN_URL + 'axiomchannel/update_stage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+    body: new URLSearchParams({ stage_id: id, name, color: editStageColor, [CSRF_NAME]: CSRF_TOKEN })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.success) { alert('Erro ao salvar estágio'); return; }
+    $('#modal-edit-stage').modal('hide');
+
+    const hdr = document.getElementById('hdr-' + id);
+    if (hdr) {
+      hdr.style.background  = editStageColor + '22';
+      hdr.style.borderColor = editStageColor + '44';
+      hdr.querySelector('.stage-dot').style.background = editStageColor;
+      hdr.querySelector('.col-count').style.background = editStageColor;
+
+      const stageName = hdr.querySelector('.stage-name');
+      stageName.textContent  = name;
+      stageName.style.color  = getContrastColor(editStageColor);
+
+      // Contraste do contador
+      hdr.querySelector('.col-count').style.color = getContrastColor(editStageColor);
+    }
+  })
+  .catch(() => alert('Erro de conexão'));
 }
 </script>
 

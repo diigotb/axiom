@@ -56,17 +56,12 @@ $route['404_override']         = '';
 $route['translate_uri_dashes'] = false;
 
 /**
- * Dashboard clean route
+ * Axiom Dashboard
  */
-$route['admin'] = 'admin/Axiom_dashboard/index';
-
-/**
- * Axiom Dashboard → SPA direto (sem duplo redirect)
- */
-$route['axiom-dashboard']             = 'axiomchannel/spa';
-$route['admin/dashboard']             = 'axiomchannel/spa';
-$route['admin/Axiom-dashboard/index'] = 'axiomchannel/spa';
-$route['admin/axiom-dashboard']       = 'axiomchannel/spa';
+$route['axiom-dashboard']             = 'admin/Axiom_dashboard/index';
+$route['admin/dashboard']             = 'admin/Axiom_dashboard/index';
+$route['admin/Axiom-dashboard/index'] = 'admin/Axiom_dashboard/index';
+$route['admin/axiom-dashboard']       = 'admin/Axiom_dashboard/index';
 
 /**
  * Admin tasks redirect (admin/admin-tasks → admin/tasks)

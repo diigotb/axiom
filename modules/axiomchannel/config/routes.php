@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+$route['axiomchannel/dashboard']                    = 'axiomchannel/dashboard';
 $route['axiomchannel']                              = 'axiomchannel/index';
 $route['axiomchannel/inbox']                        = 'axiomchannel/inbox';
 $route['axiomchannel/chat/(:num)']                  = 'axiomchannel/chat/$1';
@@ -54,6 +55,12 @@ $route['axiomchannel/meta_webhook']     = 'axiomchannel/meta_webhook';
 $route['axiomchannel/meta_send_message']  = 'axiomchannel/meta_send_message';
 $route['axiomchannel/meta_disconnect']    = 'axiomchannel/meta_disconnect';
 
+// AUTOMATIONS
+$route['axiomchannel/automations']             = 'axiomchannel/automations';
+$route['axiomchannel/automation_save']         = 'axiomchannel/automation_save';
+$route['axiomchannel/automation_delete']       = 'axiomchannel/automation_delete';
+$route['axiomchannel/automation_toggle']       = 'axiomchannel/automation_toggle';
+
 // CONTRACTS
 $route['axiomchannel/contracts']                   = 'axiomchannel/contracts';
 $route['axiomchannel/contract_new']                = 'axiomchannel/contract_new';
@@ -64,3 +71,12 @@ $route['axiomchannel/contract_sign_submit']        = 'axiomchannel/contract_sign
 $route['axiomchannel/contract_pdf/(:num)']         = 'axiomchannel/contract_pdf/$1';
 $route['axiomchannel/contract_templates']          = 'axiomchannel/contract_templates';
 $route['axiomchannel/contract_template_save']      = 'axiomchannel/contract_template_save';
+
+// SPA
+$route['axiomchannel/spa']                 = 'axiomchannel/spa';
+$route['axiomchannel/spa_page/(:any)']     = 'axiomchannel/spa_page/$1';
+$route['axiomchannel/save_theme']          = 'axiomchannel/save_theme';
+$route['axiomchannel/get_theme']           = 'axiomchannel/get_theme';
+
+// Dashboard AXIOM (AJAX data)
+$route['axiomchannel/admin_dashboard_data'] = 'axiomchannel/admin_dashboard_data';

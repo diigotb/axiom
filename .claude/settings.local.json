@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(\"C:/laragon/bin/mysql/mysql-8.0.30-winx64/bin/mysql.exe\" -u root db_axiom -e \"DELETE FROM tblmodules WHERE module_name = 'axiomchannel';\" 2>&1)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(\"C:/laragon/bin/php/php-8.1.10-Win32-vs16-x64/php.exe\" -l \"C:/laragon/www/axiom/modules/axiomchannel/libraries/AxiomChannel_Gemini.php\" 2>&1 | grep -v \"Warning\")",
+      "Bash(\"C:/laragon/bin/mysql/mysql-8.0.30-winx64/bin/mysql.exe\" -u root db_axiom -e \"SELECT * FROM tblmodules WHERE module_name = 'axiomchannel';\" 2>&1)",
+      "Bash(\"C:/laragon/bin/php/php-8.1.10-Win32-vs16-x64/php.exe\" -l \"C:/laragon/www/axiom/modules/axiomchannel/axiomchannel.php\" 2>&1 | grep -v \"Warning\" && \\\\\n\"C:/laragon/bin/php/php-8.1.10-Win32-vs16-x64/php.exe\" -l \"C:/laragon/www/axiom/modules/axiomchannel/controllers/Axiomchannel.php\" 2>&1 | grep -v \"Warning\")"
     ]
   }
 }

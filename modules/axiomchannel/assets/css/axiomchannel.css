@@ -1036,3 +1036,96 @@
 .ax-copilot-refresh:hover{color:var(--ax-teal)}
 .ax-copilot-loader{display:flex;align-items:center;justify-content:center;padding:24px;color:var(--ax-gray-400);font-size:12px;gap:6px}
 .ax-truncate    { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ─── MOBILE RESPONSIVE ─── */
+@media (max-width: 768px) {
+
+  #axiom-app {
+    flex-direction: column;
+  }
+
+  #ax-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    z-index: 1000;
+  }
+
+  #ax-header #ax-search { display: none; }
+  #ax-header #ax-weather { display: none; }
+
+  #ax-body {
+    flex-direction: column;
+    margin-top: 52px;
+    margin-bottom: 60px;
+  }
+
+  #ax-sidebar {
+    display: none !important;
+  }
+
+  #ax-bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: #0d1520;
+    border-top: 1px solid rgba(255,255,255,.06);
+    z-index: 1000;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+  }
+
+  .ax-bnav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .15s;
+    min-width: 44px;
+  }
+
+  .ax-bnav-item i {
+    font-size: 18px;
+    color: rgba(255,255,255,.35);
+  }
+
+  .ax-bnav-item span {
+    font-size: 9px;
+    color: rgba(255,255,255,.35);
+  }
+
+  .ax-bnav-item.active i,
+  .ax-bnav-item.active span {
+    color: #2D7A6B;
+  }
+
+  .ax-bnav-item.active {
+    background: rgba(45,122,107,.12);
+  }
+
+  #ax-main { width: 100%; }
+
+  #ax-theme {
+    width: 100% !important;
+    top: auto;
+    bottom: 60px;
+    right: 0;
+    height: 70vh;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .axd-stats,
+  .axd-grid2,
+  .axd-grid3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 769px) {
+  #ax-bottom-nav { display: none !important; }
+}

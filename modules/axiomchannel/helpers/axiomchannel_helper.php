@@ -46,3 +46,31 @@ if (!function_exists('axch_message_icon')) {
         return $icons[$type] ?? '';
     }
 }
+
+/**
+ * Retorna array de device_ids que o usuário logado pode ver.
+ * Admin → todos os devices. Atendente → apenas o device vinculado.
+ */
+if (!function_exists('axch_get_device_scope')) {
+    function axch_get_device_scope()
+    {
+        $CI = &get_instance();
+        if (is_admin()) {
+            $devices = $CI->db->get('tblaxch_devices')->result();
+            return array_column((array) $devices, 'id');
+        }
+        $staff_id = get_staff_user_id();
+        $config = $CI->db->get_where('tblaxch_staff_config', ['staff_id' => $staff_id])->row();
+        if ($config && $config->device_id) {
+            return [(int) $config->device_id];
+        }
+        return [];
+    }
+}
+
+if (!function_exists('axch_is_admin')) {
+    function axch_is_admin()
+    {
+        return is_admin();
+    }
+}

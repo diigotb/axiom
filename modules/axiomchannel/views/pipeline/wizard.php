@@ -39,9 +39,9 @@ init_head();
 
     <!-- STEP 1: Tipo de negócio -->
     <div id="step1" class="wiz-panel">
-      <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:28px">
-        <h3 style="font-size:17px;font-weight:600;color:var(--ax-gray-800);margin-bottom:6px">Qual é o seu tipo de negócio?</h3>
-        <p style="font-size:13px;color:var(--ax-gray-400);margin-bottom:24px">Isso ajuda a criar estágios e mensagens que fazem sentido para você</p>
+      <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:28px;text-align:center">
+        <h3 style="font-size:17px;font-weight:600;color:#1A202C !important;margin-bottom:6px">Qual é o seu tipo de negócio?</h3>
+        <p style="font-size:13px;color:#4A5568 !important;margin-bottom:24px">Isso ajuda a criar estágios e mensagens que fazem sentido para você</p>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
           <?php
@@ -56,13 +56,13 @@ init_head();
             <div class="biz-option" onclick="selectBiz(this,'<?= $t[0] ?>')"
               style="border:2px solid var(--ax-gray-200);border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px">
               <span style="font-size:22px"><?= $t[1] ?></span>
-              <span style="font-size:13px;font-weight:500;color:var(--ax-gray-700)"><?= $t[0] ?></span>
+              <span style="font-size:13px;font-weight:500;color:var(--ax-gray-800)"><?= $t[0] ?></span>
             </div>
           <?php endforeach; ?>
         </div>
 
         <div style="margin-bottom:20px">
-          <label style="font-size:12px;font-weight:500;color:var(--ax-gray-600);display:block;margin-bottom:6px">Nome do pipeline</label>
+          <label style="font-size:12px;font-weight:500;color:var(--ax-gray-800);display:block;margin-bottom:6px">Nome do pipeline</label>
           <input type="text" id="pipeline-name" class="ax-input" placeholder="Ex: Atendimento Clínica, Vendas Imóveis..." value="">
         </div>
 
@@ -88,8 +88,8 @@ init_head();
 
     <!-- STEP 2: Perguntas de atendimento -->
     <div id="step2" class="wiz-panel" style="display:none">
-      <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:28px">
-        <h3 style="font-size:17px;font-weight:600;color:var(--ax-gray-800);margin-bottom:6px">Me conta um pouco mais 🎯</h3>
+      <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:28px;text-align:center">
+        <h3 style="font-size:17px;font-weight:600;color:#1A202C !important;margin-bottom:6px">Me conta um pouco mais 🎯</h3>
         <p style="font-size:13px;color:var(--ax-gray-400);margin-bottom:24px">Quanto mais você detalhar, melhor será o pipeline criado</p>
 
         <div style="margin-bottom:20px">
@@ -140,8 +140,8 @@ init_head();
     <!-- STEP 3: Loading IA -->
     <div id="step3" class="wiz-panel" style="display:none">
       <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:40px;text-align:center">
-        <div style="font-size:48px;margin-bottom:16px;animation:spin 2s linear infinite;display:inline-block">🤖</div>
-        <h3 style="font-size:17px;font-weight:600;color:var(--ax-gray-800);margin-bottom:8px">Criando seu pipeline...</h3>
+        <div style="font-size:48px;margin-bottom:16px;animation:spin 2s linear infinite;display:inline-block,text-align:center">🤖</div>
+        <h3 style="font-size:17px;font-weight:600;color:#1A202C !important;margin-bottom:8px">Criando seu pipeline...</h3>
         <p style="font-size:13px;color:var(--ax-gray-400);margin-bottom:24px">O assistente está analisando seu negócio</p>
         <div id="loading-steps" style="text-align:left;max-width:320px;margin:0 auto">
           <div class="l-step" style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--ax-gray-50);border-radius:8px;margin-bottom:6px;font-size:12px;color:var(--ax-teal)">✓ Analisou o tipo de negócio</div>
@@ -157,8 +157,8 @@ init_head();
       <div style="background:var(--ax-teal-light);border:1px solid var(--ax-teal-mid);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:var(--ax-teal)">
         🤖 Pipeline criado! Você pode renomear ou reordenar os estágios antes de ativar.
       </div>
-      <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:28px">
-        <h3 style="font-size:17px;font-weight:600;color:var(--ax-gray-800);margin-bottom:4px">Seu pipeline está pronto! ✨</h3>
+      <div style="background:#fff;border:1px solid var(--ax-gray-200);border-radius:16px;padding:40px;text-align:center">
+        <h3 style="font-size:17px;font-weight:600;color:#1A202C !important;margin-bottom:4px">Seu pipeline está pronto! ✨</h3>
         <p style="font-size:13px;color:var(--ax-gray-400);margin-bottom:20px" id="pipeline-subtitle"></p>
         <div id="stages-result" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px"></div>
         <div style="display:flex;justify-content:space-between">
@@ -222,7 +222,7 @@ function goStep(n) {
     if (!dot) return;
     if (i < n) {
       dot.style.background = 'var(--ax-teal)';
-      dot.style.color = '#fff';
+      dot.style.color = '#000000';
       dot.textContent = '✓';
       if (document.getElementById('line' + i)) document.getElementById('line' + i).style.background = 'var(--ax-teal)';
     } else if (i === n) {
@@ -305,7 +305,7 @@ function renderResult() {
         </div>
       </div>
       <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;color:var(--ax-gray-800)">${s.name}</div>
+        <div style="font-size:13px;font-weight:600;color:var(--ax-gray-400)">${s.name}</div>
         <div style="font-size:11px;color:var(--ax-gray-400);margin-top:2px">${s.ai_action || ''}</div>
       </div>
       <span style="background:var(--ax-teal-light);color:var(--ax-teal);font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;flex-shrink:0">IA ativa</span>

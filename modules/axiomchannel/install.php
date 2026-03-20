@@ -244,3 +244,35 @@ if (!$CI->db->table_exists(db_prefix() . 'axch_assistant_stages')) {
         INDEX `idx_assistant` (`assistant_id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
 }
+
+// -------------------------------------------------------
+// Tabela: mídia de conhecimento (imagens, vídeos, docs)
+// -------------------------------------------------------
+if (!$CI->db->table_exists(db_prefix() . 'axch_knowledge_media')) {
+    $CI->db->query("CREATE TABLE `" . db_prefix() . "axch_knowledge_media` (
+        `id`            INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `assistant_id`  INT(11) NOT NULL,
+        `file_type`     ENUM('image','video','audio','pdf','document') NOT NULL DEFAULT 'document',
+        `original_name` VARCHAR(255) NOT NULL,
+        `file_path`     VARCHAR(500) NOT NULL,
+        `file_size`     FLOAT DEFAULT NULL,
+        `mime_type`     VARCHAR(100) DEFAULT NULL,
+        `media_label`   VARCHAR(255) DEFAULT NULL,
+        `created_at`    DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX `idx_assistant_media` (`assistant_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+}
+
+
+// -------------------------------------------------------
+// Tabela: preferências do staff (dashboard customization)
+// -------------------------------------------------------
+if (!$CI->db->table_exists(db_prefix() . 'axch_staff_preferences')) {
+    $CI->db->query("CREATE TABLE `" . db_prefix() . "axch_staff_preferences` (
+        `id`          INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        `staff_id`    INT(11) NOT NULL,
+        `preferences` TEXT DEFAULT NULL,
+        `updated_at`  DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY `uq_staff` (`staff_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;");
+}

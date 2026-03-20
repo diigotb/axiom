@@ -19,12 +19,11 @@ if (!defined('AXIOMCHANNEL_MODULE')) {
 // -------------------------------------------------------
 // Hooks principais
 // -------------------------------------------------------
-hooks()->add_action('admin_init',      'axiomchannel_init_menu');
-hooks()->add_action('admin_init',      'axiomchannel_intercept_perfex_dashboard');
-hooks()->add_action('app_admin_head',  'axiomchannel_add_assets');
-hooks()->add_action('admin_head',      'axiomchannel_add_assets');
-hooks()->add_action('app_admin_head',  'axiomchannel_hide_perfex_ui');
-hooks()->add_action('app_admin_footer','axiomchannel_spa_redirect');
+hooks()->add_action('admin_init',     'axiomchannel_init_menu');
+hooks()->add_action('app_admin_head', 'axiomchannel_add_assets');
+
+// Admin layout — topbar
+hooks()->add_action('after_body_start', 'axiomchannel_inject_topbar');
 
 // Cron
 register_cron_task('axiomchannel_process_queue');
@@ -39,6 +38,14 @@ register_deactivation_hook(AXIOMCHANNEL_MODULE, 'axiomchannel_deactivation_hook'
 function axiomchannel_init_menu()
 {
     $CI = &get_instance();
+
+    // Corrige o link do Dashboard para apontar para admin/dashboard (Axiom_dashboard::index)
+    $CI->app_menu->add_sidebar_menu_item('dashboard', [
+        'name'     => 'Dashboard',
+        'href'     => admin_url('dashboard'),
+        'position' => 1,
+        'icon'     => 'fa fa-home',
+    ]);
 
     $CI->app_menu->add_sidebar_menu_item('axiomchannel', [
         'name'     => 'AxiomChannel',
@@ -105,15 +112,91 @@ function axiomchannel_init_menu()
 }
 
 // -------------------------------------------------------
-// Assets (CSS)
+// Assets (CSS + JS + body class)
 // -------------------------------------------------------
 function axiomchannel_add_assets()
 {
     static $loaded = false;
     if ($loaded) return;
     $loaded = true;
-    $uri = module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css');
-    echo '<link rel="stylesheet" href="' . $uri . '?v=' . time() . '">';
+
+    $css_spa   = module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiomchannel.css');
+    $css_admin = module_dir_url(AXIOMCHANNEL_MODULE, 'assets/css/axiom_admin.css');
+    $js_admin  = module_dir_url(AXIOMCHANNEL_MODULE, 'assets/js/axiom_admin.js');
+    $base_url  = base_url();
+    $v         = @filemtime(module_dir_path(AXIOMCHANNEL_MODULE, 'assets/js/axiom_admin.js')) ?: date('YmdHis');
+
+    echo '<link rel="stylesheet" href="' . $css_spa   . '?v=' . $v . '">';
+    echo '<link rel="stylesheet" href="' . $css_admin . '?v=' . $v . '">';
+    echo '<script>window.AXIOM_BASE_URL = ' . json_encode($base_url) . ';</script>';
+    echo '<script defer src="' . $js_admin . '?v=' . $v . '"></script>';
+}
+
+// -------------------------------------------------------
+// Topbar — injetada via after_body_start (primeiro filho do <body>)
+// -------------------------------------------------------
+function axiomchannel_inject_topbar()
+{
+    if (!is_staff_logged_in()) return;
+    $view_file = module_dir_path(AXIOMCHANNEL_MODULE, 'views/admin_layout/axiom_header.php');
+    if (!file_exists($view_file)) return;
+
+    // Adiciona axiom-admin ao body imediatamente (após <body> — document.body já existe)
+    echo '<script>document.body.classList.add("axiom-admin");</script>';
+
+    $CI = &get_instance();
+    $staff_id   = get_staff_user_id();
+    $staff      = $CI->db->get_where('tblstaff', ['staffid' => $staff_id])->row();
+    $avatar_url = '';
+    if ($staff) {
+        $avatar_path = FCPATH . 'uploads/staff_profile_images/' . $staff_id . '.jpg';
+        $avatar_url  = file_exists($avatar_path)
+            ? base_url('uploads/staff_profile_images/' . $staff_id . '.jpg') . '?v=' . filemtime($avatar_path)
+            : base_url('assets/images/avatar.png');
+    }
+
+    extract(['staff' => $staff, 'avatar_url' => $avatar_url]);
+    include $view_file;
+}
+
+// -------------------------------------------------------
+// Dashboard widgets — injetados no início do dashboard
+// -------------------------------------------------------
+function axiomchannel_inject_dashboard_widgets()
+{
+    if (!is_staff_logged_in()) return;
+    $view_file = module_dir_path(AXIOMCHANNEL_MODULE, 'views/admin_layout/axiom_dashboard.php');
+    if (!file_exists($view_file)) return;
+
+    $CI = &get_instance();
+    $staff_id = get_staff_user_id();
+
+    // Métricas rápidas (sem escopo — dashboard geral)
+    $metrics = [
+        'contacts'      => (int) $CI->db->count_all_results(db_prefix() . 'axch_contacts'),
+        'open'          => (int) $CI->db->get_where(db_prefix() . 'axch_contacts', ['status' => 'open'])->num_rows(),
+        'pending'       => (int) $CI->db->get_where(db_prefix() . 'axch_contacts', ['status' => 'pending'])->num_rows(),
+        'messages_today'=> (int) $CI->db->where('DATE(created_at)', date('Y-m-d'))->count_all_results(db_prefix() . 'axch_messages'),
+        'devices'       => (int) $CI->db->count_all_results(db_prefix() . 'axch_devices'),
+        'leads'         => (int) $CI->db->count_all_results(db_prefix() . 'axch_crm_leads'),
+        'contracts'     => (int) $CI->db->where('MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW())', null, false)->count_all_results(db_prefix() . 'axch_contracts'),
+        'automations'   => (int) $CI->db->get_where(db_prefix() . 'axch_automations', ['is_active' => 1])->num_rows(),
+    ];
+
+    // Preferências do usuário
+    $prefs_row = $CI->db->get_where(db_prefix() . 'axch_staff_preferences', ['staff_id' => $staff_id])->row();
+    $prefs = $prefs_row ? json_decode($prefs_row->preferences ?? '{}', true) : [];
+
+    // Nome do staff
+    $staff = $CI->db->get_where('tblstaff', ['staffid' => $staff_id])->row();
+
+    $data = [
+        'ax_metrics' => $metrics,
+        'ax_prefs'   => $prefs,
+        'staff'      => $staff,
+    ];
+    extract($data);
+    include $view_file;
 }
 
 // -------------------------------------------------------
@@ -130,88 +213,3 @@ function axiomchannel_deactivation_hook()
     // Mantém os dados ao desativar
 }
 
-// -------------------------------------------------------
-// BLOCO 1 — Esconde UI padrão do Perfex em todo o admin
-// -------------------------------------------------------
-function axiomchannel_hide_perfex_ui()
-{
-    if (!is_admin_logged_in()) return;
-    echo '
-    <style>
-    .navbar-static-top  { display: none !important; }
-    aside#menu          { display: none !important; }
-    #menu               { display: none !important; }
-    #setup-menu-wrapper { display: none !important; }
-    .footer             { display: none !important; }
-    #page-wrapper       { margin: 0 !important; padding: 0 !important; width: 100% !important; min-height: 100vh !important; }
-    .content-wrapper    { padding: 0 !important; margin: 0 !important; background: transparent !important; }
-    #wrapper            { background: #0a0f1a !important; }
-    body                { background: #0a0f1a !important; overflow-x: hidden; }
-    .page-title-area    { display: none !important; }
-    .row.page-title     { display: none !important; }
-    </style>
-    ';
-}
-
-// -------------------------------------------------------
-// BLOCO 2 — Redireciona via JS qualquer página do admin para o SPA
-// -------------------------------------------------------
-function axiomchannel_spa_redirect()
-{
-    if (!is_admin_logged_in()) return;
-
-    $CI      = &get_instance();
-    $current = $CI->uri->uri_string();
-
-    $excluded = [
-        'axiomchannel/spa',
-        'axiomchannel/spa_page',
-        'axiomchannel/webhook',
-        'axiomchannel/meta_webhook',
-        'axiomchannel/contract_sign',
-        'axiomchannel/google_calendar_callback',
-        'authentication',
-        'clients/client_portal',
-    ];
-
-    foreach ($excluded as $exc) {
-        if (strpos($current, $exc) !== false) return;
-    }
-
-    $spa_url = admin_url('axiomchannel/spa');
-
-    echo '<script>
-(function(){
-    if (window.location.href.indexOf("axiomchannel/spa") !== -1) return;
-    var url  = window.location.href;
-    var page = "dashboard";
-    if      (url.indexOf("axiomchannel/inbox")       > -1 ||
-             url.indexOf("axiomchannel/chat")         > -1) page = "conversas";
-    else if (url.indexOf("axiomchannel/pipeline")     > -1) page = "pipeline";
-    else if (url.indexOf("axiomchannel/assistant")    > -1) page = "assistente";
-    else if (url.indexOf("axiomchannel/automations")  > -1) page = "automacoes";
-    else if (url.indexOf("axiomchannel/appointments") > -1) page = "agendamentos";
-    else if (url.indexOf("axiomchannel/contracts")    > -1) page = "contratos";
-    else if (url.indexOf("axiomchannel/devices")      > -1) page = "dispositivos";
-    else if (url.indexOf("/clients")                  > -1) page = "clientes";
-    else if (url.indexOf("/invoices")                 > -1) page = "financeiro";
-    else if (url.indexOf("/reports")                  > -1) page = "relatorios";
-    else if (url.indexOf("/leads")                    > -1) page = "leads";
-    window.location.replace("' . $spa_url . '?p=" + page);
-})();
-</script>';
-}
-
-// -------------------------------------------------------
-// Intercepta o dashboard padrão do Perfex
-// Redireciona Dashboard::index() → Axiom_dashboard
-// -------------------------------------------------------
-function axiomchannel_intercept_perfex_dashboard()
-{
-    $CI = &get_instance();
-    $class  = strtolower($CI->router->fetch_class());
-    $method = strtolower($CI->router->fetch_method());
-    if ($class === 'dashboard' && $method === 'index') {
-        redirect(admin_url('axiomchannel/spa'));
-    }
-}

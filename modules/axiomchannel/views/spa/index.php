@@ -4,7 +4,8 @@ init_head(); ?>
 <style>
 /* RESET PERFEX */
 body,#wrapper,.content-wrapper,#page-wrapper{background:#0a0f1a!important;margin:0!important;padding:0!important}
-.navbar-static-top,.footer,aside#menu,#menu,#setup-menu-wrapper{display:none!important}
+.navbar-static-top,.footer,aside#menu,#menu,#setup-menu-wrapper,.axiom-topbar{display:none!important}
+#axiom-greeting-name{display:none!important}
 #page-wrapper{margin:0!important;padding:0!important;min-height:100vh;width:100%!important}
 .content{padding:0!important;margin:0!important}
 
@@ -57,7 +58,7 @@ body,#wrapper,.content-wrapper,#page-wrapper{background:#0a0f1a!important;margin
 #ax-theme{display:none;position:fixed;top:54px;right:0;bottom:0;width:260px;background:#1a2535;border-left:1px solid rgba(45,122,107,.2);z-index:1500;padding:16px;overflow-y:auto;box-shadow:-8px 0 30px rgba(0,0,0,.4)}
 #ax-theme.open{display:block}
 .ax-tp-section{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.3);margin:12px 0 7px}
-.ax-theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.ax-theme-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .ax-th-opt{border-radius:6px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:all .12s}
 .ax-th-opt.sel{border-color:#2D7A6B}
 .ax-th-preview{height:44px;display:flex}
@@ -84,7 +85,7 @@ body,#wrapper,.content-wrapper,#page-wrapper{background:#0a0f1a!important;margin
 .ax-isb-logo{width:36px;height:36px;cursor:pointer;margin-bottom:14px;flex-shrink:0}
 .ax-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);font-size:15px;cursor:pointer;transition:all .15s;position:relative;flex-shrink:0}
 .ax-ico:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
-.ax-ico.active{background:rgba(45,122,107,.2);color:var(--ax-accent)}
+.ax-ico.active{background:var(--ax-sidebar-active-bg);color:var(--ax-accent)}
 .ax-tip{display:none;position:fixed;left:68px;background:#1e2d3d;color:#fff;font-size:11px;font-weight:500;padding:5px 10px;border-radius:6px;white-space:nowrap;z-index:9999;border:1px solid rgba(255,255,255,.08);pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .ax-ico:hover .ax-tip{display:block}
 .ax-ico-badge{position:absolute;top:4px;right:4px;background:#E53E3E;color:#fff;border-radius:8px;padding:1px 4px;font-size:8px;font-weight:700;line-height:1.2}
@@ -229,6 +230,9 @@ body,#wrapper,.content-wrapper,#page-wrapper{background:#0a0f1a!important;margin
         </div>
       </div>
       <div class="ax-isb-bot">
+        <a href="<?= admin_url('axiom-dashboard') ?>" class="ax-ico" title="Voltar ao Admin" style="text-decoration:none">
+          <i class="fa fa-th-large"></i><span class="ax-tip">← Admin</span>
+        </a>
         <div class="ax-ico" onclick="axToggleTheme()">
           <i class="fa fa-paint-brush"></i><span class="ax-tip">Personalizar tema</span>
         </div>
@@ -275,14 +279,7 @@ body,#wrapper,.content-wrapper,#page-wrapper{background:#0a0f1a!important;margin
             <div class="ax-th-sb" style="background:#fff;border-right:1px solid #e2e8f0"><div class="ax-th-dot a" style="background:#2D7A6B"></div><div class="ax-th-dot" style="background:#e2e8f0"></div></div>
             <div class="ax-th-main" style="background:#f8fafc"><div class="ax-th-card" style="background:#fff;border:1px solid #e2e8f0"></div><div class="ax-th-card" style="background:#fff;border:1px solid #e2e8f0"></div></div>
           </div>
-          <div class="ax-th-lbl" style="background:#1B3A4B;color:#fff">Médio<div class="ax-th-check">&#x25CB;</div></div>
-        </div>
-        <div class="ax-th-opt" id="th-light" onclick="axSelectTheme(this,'light')">
-          <div class="ax-th-preview" style="background:#fff">
-            <div class="ax-th-sb" style="background:#f8fafc;border-right:1px solid #e2e8f0"><div class="ax-th-dot a" style="background:#2D7A6B"></div><div class="ax-th-dot" style="background:#e2e8f0"></div></div>
-            <div class="ax-th-main" style="background:#fff"><div class="ax-th-card" style="background:#f8fafc;border:1px solid #e2e8f0"></div><div class="ax-th-card" style="background:#f8fafc;border:1px solid #e2e8f0"></div></div>
-          </div>
-          <div class="ax-th-lbl" style="background:#f8fafc;color:#1B3A4B;border-top:1px solid #e2e8f0">Claro<div class="ax-th-check" style="border-color:#cbd5e0">&#x25CB;</div></div>
+          <div class="ax-th-lbl" style="background:#1B3A4B;color:#fff">Claro<div class="ax-th-check">&#x25CB;</div></div>
         </div>
       </div>
       <div class="ax-tp-section">Cor de destaque</div>
@@ -389,6 +386,7 @@ function axApplyTheme(theme, accent) {
   var ac   = accent || '#2D7A6B';
   Object.entries(t).forEach(function(entry){ root.style.setProperty(entry[0], entry[1]); });
   root.style.setProperty('--ax-accent', ac);
+  root.style.setProperty('--ax-sidebar-active-bg', axHexToRgba(ac, 0.2));
   document.body.style.background = t['--ax-body-bg'];
   var header  = document.getElementById('ax-header');
   var sidebar = document.getElementById('ax-sidebar');
@@ -511,10 +509,20 @@ function axSelectTheme(el, theme) {
   axApplyTheme(theme, axAccent);
 }
 
+function axHexToRgba(hex, alpha) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
+
 function axSelectAccent(el, color) {
   document.querySelectorAll('.ax-ac').forEach(function(o){ o.classList.remove('sel'); });
   el.classList.add('sel');
-  document.getElementById('axiom-app').style.setProperty('--ax-accent', color);
+  var root = document.getElementById('axiom-app');
+  root.style.setProperty('--ax-accent', color);
+  root.style.setProperty('--ax-sidebar-active-bg', axHexToRgba(color, 0.2));
+  // Atualiza borda do header e botões dinamicamente
+  var header = document.getElementById('ax-header');
+  if (header) header.style.borderBottomColor = axHexToRgba(color, 0.3);
   axAccent = color;
 }
 
@@ -558,39 +566,6 @@ document.addEventListener('click', function(e) {
   }, ()=>{}, {timeout:5000});
 })();
 
-// BLOCO 5 — Intercepta links internos do Perfex para navegar no SPA
-document.addEventListener('click', function(e) {
-  var link = e.target.closest('a[href]');
-  if (!link) return;
-  var href = link.getAttribute('href');
-  if (!href || href === '#' || href.startsWith('javascript')) return;
-  if (href.startsWith('http') && href.indexOf(window.location.hostname) === -1) return;
-  var pageMap = {
-    'axiomchannel/inbox':       'conversas',
-    'axiomchannel/chat':        'conversas',
-    'axiomchannel/pipeline':    'pipeline',
-    'axiomchannel/assistant':   'assistente',
-    'axiomchannel/automations': 'automacoes',
-    'axiomchannel/appointments':'agendamentos',
-    'axiomchannel/contracts':   'contratos',
-    'axiomchannel/devices':     'dispositivos',
-    'axiomchannel/dashboard':   'dashboard',
-    'axiomchannel/spa':         'dashboard',
-    'admin/clients':            'clientes',
-    'admin/invoices':           'financeiro',
-    'admin/leads':              'leads',
-    'admin/reports':            'relatorios',
-    'axiom-dashboard':          'dashboard'
-  };
-  for (var key in pageMap) {
-    if (href.indexOf(key) !== -1) {
-      e.preventDefault();
-      e.stopPropagation();
-      axNav(pageMap[key]);
-      return;
-    }
-  }
-}, true);
 
 document.addEventListener('DOMContentLoaded', function() {
   fetch(ADMIN_URL + 'axiomchannel/get_theme', {headers:{'X-Requested-With':'XMLHttpRequest'}})

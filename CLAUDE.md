@@ -49,6 +49,16 @@
 5. Agendamentos
 6. Contratos
 
+## Evolution API
+- Diretório: `C:\laragon\www\evolution\`
+- Versão: 2.3.7
+- Porta: 8080 → `http://localhost:8080`
+- Manager: `http://localhost:8080/manager`
+- API Key: `429683C4C977415CAAFCCE10F7D57E11`
+- Banco: PostgreSQL (`postgresql://postgres:axiom2025@localhost:5432/evolution_api`)
+- **Iniciar:** executar `C:\laragon\www\evolution\evolution.bat`
+- Comando direto: `cd C:\laragon\www\evolution && node dist/main`
+
 ## PHP/MySQL binários (Laragon)
 - PHP: `C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe`
 - MySQL: `C:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysql.exe -u root db_axiom`
