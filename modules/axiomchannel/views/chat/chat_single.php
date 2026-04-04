@@ -61,6 +61,10 @@ init_head();
         <button class="ax-btn ax-btn-sm" data-toggle="modal" data-target="#modal-transfer">
           <i class="fa fa-exchange"></i> Transferir
         </button>
+        <button id="btn-toggle-ai" class="ax-btn ax-btn-sm" onclick="axchToggleAI()" title="Ativar/Desativar IA para este contato"
+          style="background:<?= !empty($contact->ai_disabled) ? 'rgba(229,62,62,.15)' : 'rgba(45,122,107,.15)' ?>;color:<?= !empty($contact->ai_disabled) ? '#E53E3E' : '#2D7A6B' ?>;border:1px solid <?= !empty($contact->ai_disabled) ? '#E53E3E' : '#2D7A6B' ?>">
+          <i class="fa fa-robot"></i> IA <?= !empty($contact->ai_disabled) ? 'Off' : 'On' ?>
+        </button>
         <button class="ax-btn ax-btn-navy ax-btn-sm" onclick="axchResolve()">
           <i class="fa fa-check"></i> Resolver
         </button>
@@ -423,6 +427,30 @@ setInterval(loadSidebarContacts, 10000);
 // ============================================================
 let _copilotSuggestions = [];
 let _copilotRefreshTimer;
+
+function axchToggleAI() {
+    fetch(ADMIN_URL + 'axiomchannel/toggle_contact_ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: new URLSearchParams({ contact_id: CONTACT_ID, [CSRF_NAME]: CSRF_TOKEN })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) return;
+        const btn = document.getElementById('btn-toggle-ai');
+        if (data.ai_disabled) {
+            btn.style.background = 'rgba(229,62,62,.15)';
+            btn.style.color = '#E53E3E';
+            btn.style.border = '1px solid #E53E3E';
+            btn.innerHTML = '<i class="fa fa-robot"></i> IA Off';
+        } else {
+            btn.style.background = 'rgba(45,122,107,.15)';
+            btn.style.color = '#2D7A6B';
+            btn.style.border = '1px solid #2D7A6B';
+            btn.innerHTML = '<i class="fa fa-robot"></i> IA On';
+        }
+    });
+}
 
 function axchCopilotRefresh() {
   const icon = document.getElementById('copilot-refresh-icon');

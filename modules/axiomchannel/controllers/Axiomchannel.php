@@ -363,6 +363,20 @@ class Axiomchannel extends AdminController
     }
 
     // ============================================================
+    // TOGGLE IA POR CONTATO
+    // ============================================================
+    public function toggle_contact_ai()
+    {
+        if (!$this->input->is_ajax_request()) show_404();
+        $contact_id = (int) $this->input->post('contact_id');
+        $contact = $this->axiomchannel_model->get_contact($contact_id);
+        if (!$contact) { echo json_encode(['success' => false]); return; }
+        $new_val = empty($contact->ai_disabled) ? 1 : 0;
+        $this->axiomchannel_model->update_contact($contact_id, ['ai_disabled' => $new_val]);
+        echo json_encode(['success' => true, 'ai_disabled' => $new_val]);
+    }
+
+    // ============================================================
     // TRANSFERIR ATENDIMENTO
     // ============================================================
     public function transfer()
@@ -418,6 +432,10 @@ class Axiomchannel extends AdminController
 
         if (!empty($data['key']['fromMe'])) return;
 
+        // Guard: ignora mensagens com mais de 5 minutos (historico ao reconectar Evolution)
+        $msg_time = (int)($data['messageTimestamp'] ?? 0);
+        if ($msg_time > 0 && (time() - $msg_time) > 300) return;
+
         $phone   = preg_replace('/@.*/', '', $data['key']['remoteJid'] ?? '');
         $name    = $data['pushName'] ?? null;
         $content = $data['message']['conversation']
@@ -449,6 +467,9 @@ class Axiomchannel extends AdminController
 
         // Guard 1: IA habilitada no dispositivo
         if (empty($device->ai_enabled)) return;
+
+        // Guard 1.5: IA desligada para este contato especifico
+        if (!empty($contact->ai_disabled)) return;
 
         // Guard 2: contato resolvido ou em atendimento humano (pending = aguardando staff)
         if (in_array($contact->status, ['resolved', 'pending'])) return;
